@@ -13,6 +13,7 @@
             --text: #333;
             --card-bg: #ffffff;
             --border: #e2e8f0;
+            --info: #3182ce;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -30,7 +31,7 @@
             background: var(--card-bg); 
             width: 100%; 
             max-width: 440px; 
-            padding: 2rem; 
+            padding: 1.8rem; 
             border-radius: 16px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
             text-align: center; 
@@ -47,7 +48,7 @@
         .subtitle {
             font-size: 0.9rem;
             color: #7f8c8d;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         /* ユーザーバー（ヘッダー） */
@@ -58,7 +59,7 @@
             background: #edf2f7;
             padding: 8px 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 0.8rem;
             color: #4a5568;
         }
@@ -67,7 +68,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 220px;
+            max-width: 200px;
         }
         .logout-btn {
             background: #e2e8f0;
@@ -85,24 +86,53 @@
             background: #cbd5e0;
         }
 
+        /* 統計情報ダッシュボード */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #2d3748;
+        }
+        .stat-val.mastered { color: var(--primary); }
+        .stat-val.review { color: var(--error); }
+        .stat-lbl {
+            font-size: 0.65rem;
+            color: #718096;
+            margin-top: 2px;
+        }
+
         /* 認証フォーム */
         .auth-form {
             text-align: left;
         }
         .auth-form h2 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             color: #2c3e50;
             margin-bottom: 15px;
             text-align: center;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .form-group label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             color: #4a5568;
         }
         .form-group input {
@@ -118,7 +148,7 @@
             border-color: var(--primary);
         }
         .auth-switch {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--primary);
             cursor: pointer;
             text-align: center;
@@ -134,7 +164,7 @@
             text-align: center;
             color: #a0aec0;
             font-size: 0.8rem;
-            margin: 20px 0;
+            margin: 15px 0;
         }
         .guest-divider::before, .guest-divider::after {
             content: '';
@@ -158,8 +188,8 @@
         .select-label {
             text-align: left;
             font-weight: bold;
-            font-size: 0.95rem;
-            margin: 15px 0 8px 2px;
+            font-size: 0.9rem;
+            margin: 12px 0 6px 2px;
             color: #34495e;
             display: flex;
             justify-content: space-between;
@@ -167,32 +197,32 @@
         }
 
         .select-label span {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--primary);
             font-weight: normal;
         }
 
-        /* 出題モードトグル */
-        .mode-container {
+        /* 2状態トグル共通 */
+        .toggle-container {
             display: flex;
             background: #edf2f7;
             padding: 4px;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
-        .mode-btn {
+        .toggle-btn {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             margin: 0;
             border: none;
             border-radius: 8px;
             background: transparent;
             font-weight: bold;
             color: #718096;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
         }
-        .mode-btn.active {
+        .toggle-btn.active {
             background: white;
             color: #2d3748;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -203,10 +233,10 @@
             border: 2px solid var(--border);
             border-radius: 10px;
             padding: 10px;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
             background: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .section-grid {
             display: grid;
@@ -219,8 +249,8 @@
             justify-content: center;
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 8px;
-            font-size: 0.85rem;
+            padding: 6px;
+            font-size: 0.8rem;
             cursor: pointer;
             user-select: none;
             transition: all 0.15s;
@@ -238,11 +268,11 @@
         .bulk-buttons {
             display: flex;
             gap: 6px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .bulk-btn {
             flex: 1;
-            padding: 6px 10px;
+            padding: 5px 8px;
             font-size: 0.75rem;
             margin: 0;
             border: 1px solid var(--border);
@@ -257,33 +287,33 @@
         /* クイック範囲選択用セレクト */
         .range-select-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             background: #f8fafc;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             border: 1px dashed var(--border);
         }
         .range-select-container span {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #4a5568;
             white-space: nowrap;
         }
         .range-select-container select {
             margin: 0;
-            padding: 6px 10px;
-            font-size: 0.85rem;
+            padding: 4px 8px;
+            font-size: 0.8rem;
         }
         
         /* 一般セレクトボックス */
         select { 
             width: 100%; 
-            padding: 12px; 
-            margin-bottom: 15px; 
+            padding: 10px; 
+            margin-bottom: 12px; 
             border-radius: 8px; 
             border: 2px solid var(--border); 
-            font-size: 1rem;
+            font-size: 0.95rem;
             background-color: #fff;
             color: var(--text);
             outline: none;
@@ -297,14 +327,14 @@
         /* ボタンのデザイン */
         button { 
             width: 100%; 
-            padding: 14px; 
-            margin: 8px 0; 
+            padding: 12px; 
+            margin: 6px 0; 
             border: 2px solid #edf2f7; 
             border-radius: 10px; 
             background: white; 
             cursor: pointer; 
             transition: all 0.2s ease; 
-            font-size: 1rem; 
+            font-size: 0.95rem; 
             font-weight: 600;
             color: #4a5568;
             box-sizing: border-box;
@@ -327,8 +357,8 @@
             color: white; 
             border: none; 
             font-weight: bold; 
-            margin-top: 15px; 
-            font-size: 1.1rem;
+            margin-top: 10px; 
+            font-size: 1rem;
             box-shadow: 0 4px 6px rgba(76, 175, 80, 0.15);
         }
         .start-btn:hover { 
@@ -358,22 +388,28 @@
         }
         
         #progress { 
-            font-size: 0.95rem; 
+            font-size: 0.9rem; 
             color: #718096; 
-            margin-bottom: 15px; 
+            margin-bottom: 10px; 
             font-weight: bold;
         }
         #question-meaning { 
-            margin: 25px 0; 
+            margin: 20px 0; 
             min-height: 4em; 
             display: flex; 
+            flex-direction: column;
             align-items: center; 
             justify-content: center; 
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             line-height: 1.4;
             color: #2d3748;
             border-bottom: 2px dashed #edf2f7;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
+        }
+        .question-meta {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            margin-top: 6px;
         }
 
         #loading-overlay {
@@ -392,6 +428,49 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* カスタムダイアログ（モーダル） */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        .modal-msg {
+            font-size: 0.9rem;
+            color: #4a5568;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            margin: 0;
+            font-size: 0.85rem;
         }
 
         /* エラー・デバッグ表示用スタイル */
@@ -445,37 +524,62 @@
     <!-- 1. 設定画面 -->
     <div id="home-screen" class="hidden">
         <h1>単語学習クイズ</h1>
-        <p class="subtitle">学習オプションを設定</p>
         
+        <!-- 学習進捗ダッシュボード -->
+        <div class="dashboard" id="user-dashboard">
+            <div class="stat-card">
+                <span class="stat-val" id="stat-total">0</span>
+                <span class="stat-lbl">学習済みの語数</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val mastered" id="stat-mastered">0</span>
+                <span class="stat-lbl">習得済み(正答3+)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val review" id="stat-review">0</span>
+                <span class="stat-lbl">要復習(苦手)</span>
+            </div>
+        </div>
+        
+        <!-- 出題対象のトグル設定 -->
+        <div class="select-label">出題対象</div>
+        <div class="toggle-container">
+            <button type="button" class="toggle-btn active" id="target-all" onclick="setTargetType('all')">全単語からランダム</button>
+            <button type="button" class="toggle-btn" id="target-weak" onclick="setTargetType('weak')">苦手な単語のみ</button>
+        </div>
+
         <div class="select-label">出題モード</div>
-        <div class="mode-container">
-            <button type="button" class="mode-btn active" id="mode-en-ja" onclick="setMode('en-ja')">英和 (英 → 和)</button>
-            <button type="button" class="mode-btn" id="mode-ja-en" onclick="setMode('ja-en')">和英 (和 → 英)</button>
+        <div class="toggle-container">
+            <button type="button" class="toggle-btn active" id="mode-en-ja" onclick="setMode('en-ja')">英和 (英 → 和)</button>
+            <button type="button" class="toggle-btn" id="mode-ja-en" onclick="setMode('ja-en')">和英 (和 → 英)</button>
         </div>
 
-        <div class="select-label">
-            セクションを選択
-            <span id="selected-count">選択中: 0セクション</span>
-        </div>
-        
-        <!-- セクション一括操作ボタン -->
-        <div class="bulk-buttons">
-            <button type="button" class="bulk-btn" onclick="selectAllSections(true)">すべて選択</button>
-            <button type="button" class="bulk-btn" onclick="selectAllSections(false)">選択クリア</button>
-        </div>
+        <!-- セクション選択エリア（全単語出題時のみ表示） -->
+        <div id="section-selection-area">
+            <div class="select-label">
+                セクションを選択
+                <span id="selected-count">選択中: 0セクション</span>
+            </div>
+            
+            <!-- セクション一括操作ボタン -->
+            <div class="bulk-buttons">
+                <button type="button" class="bulk-btn" onclick="selectAllSections(true)">すべて選択</button>
+                <button type="button" class="bulk-btn" onclick="selectAllSections(false)">選択クリア</button>
+            </div>
 
-        <!-- 範囲一括指定スライダー/セレクト -->
-        <div class="range-select-container">
-            <span>範囲一括:</span>
-            <select id="range-start" onchange="selectRange()"></select>
-            <span>〜</span>
-            <select id="range-end" onchange="selectRange()"></select>
-        </div>
+            <!-- 範囲一括指定スライダー/セレクト -->
+            <div class="range-select-container">
+                <span>範囲一括:</span>
+                <select id="range-start" onchange="selectRange()"></select>
+                <span>〜</span>
+                <select id="range-end" onchange="selectRange()"></select>
+            </div>
 
-        <!-- 複数セクション選択用のスクロール可能な格子 -->
-        <div class="section-container">
-            <div class="section-grid" id="section-grid-area">
-                <!-- JavaScriptで1から68まで動的に展開します -->
+            <!-- 複数セクション選択用のスクロール可能な格子 -->
+            <div class="section-container">
+                <div class="section-grid" id="section-grid-area">
+                    <!-- JavaScriptで1から68まで動的に展開 -->
+                </div>
             </div>
         </div>
         
@@ -506,7 +610,10 @@
     <!-- 2. クイズ画面 -->
     <div id="quiz-screen" class="hidden">
         <div id="progress">1 / 10</div>
-        <h2 id="question-meaning">読み込み中...</h2>
+        <div id="question-meaning">
+            <div id="question-text">読み込み中...</div>
+            <div class="question-meta" id="question-meta-info"></div>
+        </div>
         <div id="choices-area">
             <!-- ボタンが動的に生成される -->
         </div>
@@ -520,21 +627,36 @@
     </div>
 </div>
 
+<!-- カスタムアラート・確認用モーダルダイアログ -->
+<div id="custom-modal" class="modal-backdrop hidden">
+    <div class="modal-content">
+        <div class="modal-title" id="modal-title-text">確認</div>
+        <div class="modal-msg" id="modal-msg-text">メッセージ</div>
+        <div class="modal-buttons">
+            <button id="modal-btn-cancel" class="bulk-btn modal-btn hidden">キャンセル</button>
+            <button id="modal-btn-ok" class="start-btn modal-btn" style="margin: 0; padding: 10px;">OK</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     // Firebase SDKの読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, setDoc, limit, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // --- Firebaseの設定 ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyD3kROMBvsbOScqTomHWzQrgibk1SGyRrk",
-        authDomain: "word-app-sokutan.firebaseapp.com",
-        projectId: "word-app-sokutan",
-        storageBucket: "word-app-sokutan.appspot.com",
-        messagingSenderId: "891824625031",
-        appId: "G-G478K2FX6P"
-    };
+    // --- Firebase環境設定（RULE 1 準拠） ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'word-app-sokutan';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+        ? JSON.parse(__firebase_config) 
+        : {
+            apiKey: "AIzaSyD3kROMBvsbOScqTomHWzQrgibk1SGyRrk",
+            authDomain: "word-app-sokutan.firebaseapp.com",
+            projectId: "word-app-sokutan",
+            storageBucket: "word-app-sokutan.appspot.com",
+            messagingSenderId: "891824625031",
+            appId: "G-G478K2FX6P"
+        };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -569,15 +691,46 @@
         }
     }
 
+    // --- カスタムモーダルシステム（ブラウザ標準alert/confirmの回避） ---
+    let modalResolve = null;
+    function showModal(title, msg, showCancel = false) {
+        return new Promise((resolve) => {
+            modalResolve = resolve;
+            document.getElementById("modal-title-text").innerText = title;
+            document.getElementById("modal-msg-text").innerText = msg;
+            
+            const cancelBtn = document.getElementById("modal-btn-cancel");
+            if (showCancel) {
+                cancelBtn.classList.remove("hidden");
+            } else {
+                cancelBtn.classList.add("hidden");
+            }
+            
+            document.getElementById("custom-modal").classList.remove("hidden");
+        });
+    }
+
+    document.getElementById("modal-btn-ok").onclick = () => {
+        document.getElementById("custom-modal").classList.add("hidden");
+        if (modalResolve) modalResolve(true);
+    };
+
+    document.getElementById("modal-btn-cancel").onclick = () => {
+        document.getElementById("custom-modal").classList.add("hidden");
+        if (modalResolve) modalResolve(false);
+    };
+
     // クイズ設定・認証用のグローバル変数
     let selectedSections = new Set([1]); // デフォルトでSection 1を選択
     let quizMode = "en-ja"; // デフォルトで英和モード
+    let targetType = "all"; // all: 全単語, weak: 苦手単語のみ
     let quizDataList = [];
     let currentIndex = 0;
     let score = 0;
     let currentCollectionRef = null;
     let isRegisterMode = false; // ログインフォーム or 新規登録フォームのトグル状態
     let currentUser = null;
+    let userProgressMap = new Map(); // ユーザーの学習進捗データ
 
     // UI初期構築
     const maxSection = 68;
@@ -587,7 +740,6 @@
 
     // 1〜68のセクションを動的に生成
     for (let i = 1; i <= maxSection; i++) {
-        // グリッドアイテム
         const item = document.createElement("div");
         item.className = "section-item" + (selectedSections.has(i) ? " selected" : "");
         item.innerText = `Sec ${i}`;
@@ -595,7 +747,6 @@
         item.onclick = () => toggleSection(i, item);
         gridArea.appendChild(item);
 
-        // 範囲選択用セレクトメニューオプション
         const optStart = document.createElement("option");
         optStart.value = i;
         optStart.innerText = `Sec ${i}`;
@@ -604,34 +755,93 @@
         const optEnd = document.createElement("option");
         optEnd.value = i;
         optEnd.innerText = `Sec ${i}`;
-        if (i === 1) optEnd.selected = true; // デフォルト設定
+        if (i === 1) optEnd.selected = true;
         rangeEnd.appendChild(optEnd);
     }
     updateSelectedCountDisplay();
 
-    // 認証監視ライフサイクル
-    onAuthStateChanged(auth, (user) => {
+    // 認証監視ライフサイクル (RULE 3 準拠)
+    const initAuth = async () => {
+        document.getElementById("loading-overlay").classList.remove("hidden");
+        document.getElementById("loading-text").innerText = "認証情報を確認中...";
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            }
+        } catch (error) {
+            console.error("Custom token auth failed, falling back to anonymous/normal: ", error);
+        }
+    };
+    initAuth();
+
+    onAuthStateChanged(auth, async (user) => {
         currentUser = user;
-        document.getElementById("loading-overlay").classList.add("hidden");
         
         if (user) {
-            // ログイン済み：設定（ホーム）画面へ遷移
+            document.getElementById("loading-overlay").classList.remove("hidden");
+            document.getElementById("loading-text").innerText = "学習データを取得中...";
+            
+            // ユーザー進捗データをロード (RULE 2 ＆ RULE 3 準拠)
+            await loadUserProgressData(user.uid);
+            
             document.getElementById("auth-screen").classList.add("hidden");
             document.getElementById("user-info-bar").classList.remove("hidden");
             document.getElementById("home-screen").classList.remove("hidden");
             
-            // ユーザー名の表示
             const displayName = user.isAnonymous ? "ゲストユーザー" : user.email;
             document.getElementById("display-user-name").innerText = displayName;
         } else {
-            // 未ログイン：認証画面へ遷移
             document.getElementById("user-info-bar").classList.add("hidden");
             document.getElementById("home-screen").classList.add("hidden");
             document.getElementById("quiz-screen").classList.add("hidden");
             document.getElementById("result-screen").classList.add("hidden");
             document.getElementById("auth-screen").classList.remove("hidden");
         }
+        document.getElementById("loading-overlay").classList.add("hidden");
     });
+
+    // ユーザー進捗データの読み込み（RULE 2: シンプルなクエリで全取得し、メモリ上で計算）
+    async function loadUserProgressData(userId) {
+        userProgressMap.clear();
+        if (!userId) return;
+
+        try {
+            // パス仕様: /artifacts/{appId}/users/{userId}/progress (RULE 1 準拠)
+            const progressCol = collection(db, 'artifacts', appId, 'users', userId, 'progress');
+            const snap = await getDocs(progressCol);
+            
+            let totalPracticed = 0;
+            let masteredCount = 0;
+            let reviewCount = 0;
+
+            snap.forEach((doc) => {
+                const data = doc.data();
+                userProgressMap.set(doc.id, data);
+                
+                totalPracticed++;
+                
+                const corrects = data.correctCount || 0;
+                const wrongs = data.wrongCount || 0;
+
+                // 習得済み: 3回以上正解、かつ間違いが0回のもの
+                if (corrects >= 3 && wrongs === 0) {
+                    masteredCount++;
+                }
+                // 苦手(要復習): 1回でも間違えたもの
+                if (wrongs > 0) {
+                    reviewCount++;
+                }
+            });
+
+            // ダッシュボードUI更新
+            document.getElementById("stat-total").innerText = totalPracticed;
+            document.getElementById("stat-mastered").innerText = masteredCount;
+            document.getElementById("stat-review").innerText = reviewCount;
+        } catch (e) {
+            console.error("Failed to load user progress:", e);
+            showDebug("進捗データの取得エラー: " + e.message);
+        }
+    }
 
     // 認証モード切り替え
     window.toggleAuthMode = () => {
@@ -651,29 +861,28 @@
         }
     };
 
-    // メール/パスワードによる認証アクション
+    // メール/パスワードによる認証
     window.triggerAuthAction = async () => {
         const email = document.getElementById("auth-email").value.trim();
         const password = document.getElementById("auth-password").value.trim();
 
         if (!email || !password) {
-            alert("メールアドレスとパスワードを入力してください。");
+            await showModal("エラー", "メールアドレスとパスワードを入力してください。");
             return;
         }
         if (password.length < 6) {
-            alert("パスワードは6文字以上で設定してください。");
+            await showModal("エラー", "パスワードは6文字以上で設定してください。");
             return;
         }
 
         document.getElementById("loading-overlay").classList.remove("hidden");
+        document.getElementById("loading-text").innerText = "アカウントを認証中...";
 
         try {
             if (isRegisterMode) {
-                // 新規アカウント作成
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("アカウントの作成が成功し、ログインしました！");
+                await showModal("成功", "アカウントの作成が成功し、自動的にログインしました！");
             } else {
-                // 通常ログイン
                 await signInWithEmailAndPassword(auth, email, password);
             }
         } catch (error) {
@@ -687,36 +896,54 @@
             } else if (error.code === "auth/invalid-email") {
                 userFriendlyMsg = "メールアドレスの形式が正しくありません。";
             }
-            alert(userFriendlyMsg);
+            await showModal("エラー", userFriendlyMsg);
         }
     };
 
     // 匿名(ゲスト)ログイン
     window.triggerGuestLogin = async () => {
         document.getElementById("loading-overlay").classList.remove("hidden");
+        document.getElementById("loading-text").innerText = "ゲストログイン中...";
         try {
             await signInAnonymously(auth);
         } catch (error) {
             document.getElementById("loading-overlay").classList.add("hidden");
             console.error("Guest login error:", error);
-            alert("ゲストログインに失敗しました。時間をおいてもう一度お試しください。");
+            await showModal("エラー", "ゲストログインに失敗しました。時間をおいてもう一度お試しください。");
         }
     };
 
     // ログアウト
     window.triggerLogout = async () => {
-        if (confirm("ログアウトしますか？")) {
+        const confirmLogout = await showModal("ログアウト確認", "ログアウトしますか？", true);
+        if (confirmLogout) {
             document.getElementById("loading-overlay").classList.remove("hidden");
+            document.getElementById("loading-text").innerText = "ログアウト中...";
             try {
                 await signOut(auth);
-                // 画面のリセット
+                userProgressMap.clear();
                 currentIndex = 0;
                 score = 0;
             } catch (error) {
                 document.getElementById("loading-overlay").classList.add("hidden");
                 console.error("Logout error:", error);
-                alert("ログアウトに失敗しました。");
+                await showModal("エラー", "ログアウトに失敗しました。");
             }
+        }
+    };
+
+    // 出題対象の設定
+    window.setTargetType = (type) => {
+        targetType = type;
+        document.getElementById("target-all").classList.toggle("active", type === 'all');
+        document.getElementById("target-weak").classList.toggle("active", type === 'weak');
+        
+        // 「苦手な単語のみ」選択時は、セクション選択画面を非表示にする
+        const sectionSelectionArea = document.getElementById("section-selection-area");
+        if (type === 'weak') {
+            sectionSelectionArea.classList.add("hidden");
+        } else {
+            sectionSelectionArea.classList.remove("hidden");
         }
     };
 
@@ -760,7 +987,7 @@
         const start = parseInt(rangeStart.value);
         const end = parseInt(rangeEnd.value);
         
-        if (start > end) return; // 不正な範囲
+        if (start > end) return;
 
         selectedSections.clear();
         const items = gridArea.querySelectorAll(".section-item");
@@ -780,7 +1007,7 @@
         document.getElementById("selected-count").innerText = `選択中: ${selectedSections.size} セクション`;
     }
 
-    // デバッグメッセージを表示する関数
+    // デバッグメッセージ表示
     function showDebug(msg) {
         const debugArea = document.getElementById("debug-area");
         const debugMsg = document.getElementById("debug-message");
@@ -792,8 +1019,8 @@
     window.startQuiz = async () => {
         initAudio(); 
         
-        if (selectedSections.size === 0) {
-            alert("セクションを少なくとも1つ選択してください。");
+        if (targetType === "all" && selectedSections.size === 0) {
+            await showModal("エラー", "セクションを少なくとも1つ選択してください。");
             return;
         }
 
@@ -802,6 +1029,7 @@
         // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
         document.getElementById("loading-overlay").classList.remove("hidden");
+        document.getElementById("loading-text").innerText = "問題を準備中...";
 
         const possibleCollections = [
             collection(db, "vocabulary"),
@@ -811,10 +1039,7 @@
         let accumulatedDocs = [];
 
         try {
-            const sectionList = Array.from(selectedSections);
-            showDebug(`選択セクションのフェッチを開始... [${sectionList.join(", ")}]`);
-
-            // どのコレクションパスにデータがあるか検証
+            // パス有効検証
             let targetColRef = null;
             for (const colRef of possibleCollections) {
                 try {
@@ -830,41 +1055,61 @@
             }
 
             if (!targetColRef) {
-                targetColRef = possibleCollections[0]; // デフォルトフォールバック
+                targetColRef = possibleCollections[0];
             }
 
             currentCollectionRef = targetColRef;
 
-            // 選択されたセクションごとに並行ロード
-            const fetchPromises = sectionList.map(async (sectionNum) => {
-                const sectionStr = String(sectionNum);
-                const zeroPaddedSection = String(sectionNum).padStart(2, '0');
-                
-                // 1. 数値で検索
-                let q = query(targetColRef, where("section", "==", sectionNum));
-                let snap = await getDocs(q);
+            if (targetType === "weak") {
+                // 苦手な単語のみで出題（メモリ上の進捗マップからwrongCount > 0のものをピックアップ）
+                const weakWordList = [];
+                userProgressMap.forEach((data, wordId) => {
+                    if (data.wrongCount > 0) {
+                        weakWordList.push({
+                            id: wordId,
+                            word: data.word,
+                            meaning: data.meaning,
+                            section: data.section || "?"
+                        });
+                    }
+                });
 
-                // 2. 空なら文字列で検索
-                if (snap.empty) {
-                    q = query(targetColRef, where("section", "==", sectionStr));
-                    snap = await getDocs(q);
+                if (weakWordList.length === 0) {
+                    document.getElementById("loading-overlay").classList.add("hidden");
+                    await showModal("確認", "苦手な単語（過去に間違えた単語）がまだありません！まずは「全単語」から学習を開始しましょう。");
+                    restartHome();
+                    return;
                 }
 
-                // 3. 空ならゼロパディング文字列で検索
-                if (snap.empty) {
-                    q = query(targetColRef, where("section", "==", zeroPaddedSection));
-                    snap = await getDocs(q);
-                }
+                accumulatedDocs = weakWordList;
+            } else {
+                // 通常のセクション別単語取得
+                const sectionList = Array.from(selectedSections);
+                const fetchPromises = sectionList.map(async (sectionNum) => {
+                    const sectionStr = String(sectionNum);
+                    const zeroPaddedSection = String(sectionNum).padStart(2, '0');
+                    
+                    let q = query(targetColRef, where("section", "==", sectionNum));
+                    let snap = await getDocs(q);
 
-                return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            });
+                    if (snap.empty) {
+                        q = query(targetColRef, where("section", "==", sectionStr));
+                        snap = await getDocs(q);
+                    }
 
-            const results = await Promise.all(fetchPromises);
-            
-            // 全データをマージ
-            results.forEach(docsList => {
-                accumulatedDocs = accumulatedDocs.concat(docsList);
-            });
+                    if (snap.empty) {
+                        q = query(targetColRef, where("section", "==", zeroPaddedSection));
+                        snap = await getDocs(q);
+                    }
+
+                    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                });
+
+                const results = await Promise.all(fetchPromises);
+                results.forEach(docsList => {
+                    accumulatedDocs = accumulatedDocs.concat(docsList);
+                });
+            }
 
             // シャッフルして制限
             accumulatedDocs.sort(() => Math.random() - 0.5);
@@ -876,7 +1121,7 @@
             }
 
             if (quizDataList.length === 0) {
-                alert(`選択されたセクションに該当する単語データがFirestoreで見つかりませんでした。`);
+                await showModal("エラー", "該当する単語データが見つかりませんでした。");
                 restartHome();
                 return;
             }
@@ -887,19 +1132,50 @@
             
             showNextQuestion();
         } catch (e) {
-            console.error("Error fetching data: ", e);
+            console.error("Error preparing quiz: ", e);
             document.getElementById("loading-overlay").classList.add("hidden");
             restartHome();
-            
-            let errMsg = e.message;
-            if (e.message && e.message.includes("index")) {
-                errMsg = "Firestoreのインデックスが必要です。";
-            } else if (e.code === "permission-denied") {
-                errMsg = "Firestoreの読み取り権限がありません。";
-            }
-            alert(errMsg);
+            await showModal("エラー", e.message || "通信エラーが発生しました。");
         }
     };
+
+    // 個別の学習進捗をFirestoreに更新して記録する（RULE 1 ＆ RULE 3 準拠）
+    async function updateWordProgress(wordId, isCorrect, wordData) {
+        if (!currentUser) return; // 認証なしはガード
+
+        try {
+            // パス: /artifacts/{appId}/users/{userId}/progress/{wordId} (RULE 1 準拠)
+            const progressDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'progress', wordId);
+            
+            // 進捗ドキュメントのアップグレード
+            await setDoc(progressDocRef, {
+                word: wordData.word || "",
+                meaning: wordData.meaning || "",
+                section: wordData.section || "",
+                correctCount: increment(isCorrect ? 1 : 0),
+                wrongCount: increment(isCorrect ? 0 : 1),
+                lastPracticed: serverTimestamp()
+            }, { merge: true });
+
+            // メモリ上のマップも直接同期して同期ずれを防止
+            if (!userProgressMap.has(wordId)) {
+                userProgressMap.set(wordId, {
+                    word: wordData.word,
+                    meaning: wordData.meaning,
+                    section: wordData.section,
+                    correctCount: 0,
+                    wrongCount: 0
+                });
+            }
+            const currentMem = userProgressMap.get(wordId);
+            if (isCorrect) currentMem.correctCount++;
+            else currentMem.wrongCount++;
+            currentMem.lastPracticed = new Date();
+
+        } catch (err) {
+            console.error("Error updating word progress:", err);
+        }
+    }
 
     // 問題表示
     async function showNextQuestion() {
@@ -911,19 +1187,20 @@
         const currentQuiz = quizDataList[currentIndex];
         document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
 
-        // 出題モードによって問題の表示と「正解値」を切り替える
+        // 出題モードによって問題と「正解値」を切り替える
         let questionText = "";
         let correctAnswerValue = "";
 
         if (quizMode === "en-ja") {
-            questionText = `英単語： ${currentQuiz.word}`;
+            questionText = currentQuiz.word;
             correctAnswerValue = currentQuiz.meaning;
         } else {
-            questionText = `意味： ${currentQuiz.meaning}`;
+            questionText = currentQuiz.meaning;
             correctAnswerValue = currentQuiz.word;
         }
 
-        document.getElementById("question-meaning").innerText = questionText;
+        document.getElementById("question-text").innerText = questionText;
+        document.getElementById("question-meta-info").innerText = `Section ${currentQuiz.section || '?'}`;
 
         // ハズレの選択肢を作成
         let choices = [correctAnswerValue];
@@ -932,7 +1209,7 @@
         
         const targetCol = currentCollectionRef || collection(db, "vocabulary");
 
-        while (choices.length < 4 && attempts < 30) {
+        while (choices.length < 4 && attempts < 25) {
             attempts++;
             const randomNum = Math.floor(Math.random() * maxWords) + 1;
             const randomId = "word_" + String(randomNum).padStart(4, '0');
@@ -979,10 +1256,13 @@
     }
 
     // 正誤判定
-    function checkAnswer(btn, isCorrect) {
+    async function checkAnswer(btn, isCorrect) {
         const buttons = document.querySelectorAll("#choices-area button");
         buttons.forEach(b => b.disabled = true);
 
+        const currentQuiz = quizDataList[currentIndex];
+
+        // 判定演出
         if (isCorrect) {
             score++;
             btn.classList.add("correct");
@@ -992,6 +1272,11 @@
             document.getElementById("app").classList.add("shake");
             playTone(150, 'sawtooth', 0.4);
             setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
+        }
+
+        // Firestoreに進捗を保存（バックグラウンドで実行、UXに遅延を与えない）
+        if (currentQuiz && currentQuiz.id) {
+            updateWordProgress(currentQuiz.id, isCorrect, currentQuiz);
         }
 
         setTimeout(() => {
@@ -1007,13 +1292,19 @@
         document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
     }
 
-    // 設定に戻る（クイズの終了処理）
-    window.restartHome = () => {
+    // 設定（ホーム）に戻る
+    window.restartHome = async () => {
         currentIndex = 0;
         score = 0;
         document.getElementById("quiz-screen").classList.add("hidden");
         document.getElementById("result-screen").classList.add("hidden");
+        
         if (currentUser) {
+            document.getElementById("loading-overlay").classList.remove("hidden");
+            document.getElementById("loading-text").innerText = "最新進捗データを同期中...";
+            // 最新の統計をロード
+            await loadUserProgressData(currentUser.uid);
+            document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("home-screen").classList.remove("hidden");
         } else {
             document.getElementById("auth-screen").classList.remove("hidden");
