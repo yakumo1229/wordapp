@@ -6,20 +6,27 @@
     <title>単語クイズ - word-app-sokutan</title>
     <style>
         :root {
-            --primary: #4CAF50;
-            --primary-hover: #43a047;
-            --error: #f44336;
-            --bg: #f5f7fa;
-            --text: #333;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --info: #3182ce;
+            --primary: #00f2fe; /* ネオンブルー */
+            --primary-hover: #4facfe;
+            --error: #ff007f; /* ネオンマゼンタ */
+            --bg-dark: #060814;
+            --text-light: #f7fafc;
+            --card-bg: rgba(15, 23, 42, 0.65); /* グラスモフィズム用半透明 */
+            --border: rgba(255, 255, 255, 0.15);
             --gold: #f59e0b;
+            --nebula-1: #0f172a;
+            --nebula-2: #1e1b4b;
+            --nebula-3: #311042;
         }
+
+        /* 宇宙空間と流動的な星雲背景 */
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
-            background: var(--bg); 
-            color: var(--text);
+            background: radial-gradient(circle at 20% 30%, var(--nebula-3) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, var(--nebula-2) 0%, transparent 50%),
+                        var(--bg-dark);
+            background-attachment: fixed;
+            color: var(--text-light);
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -27,42 +34,98 @@
             margin: 0; 
             padding: 10px;
             box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative;
         }
+
+        /* 背景を流れる無数の星屑アニメーション */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            box-shadow: 20vw 10vh #fff, 40vw 80vh rgba(255,255,255,0.4), 75vw 20vh #fff, 
+                        90vw 60vh rgba(255,255,255,0.7), 10vw 90vh #fff, 85vw 90vh rgba(255,255,255,0.3),
+                        50vw 50vh #fff, 30vw 40vh rgba(255,255,255,0.5), 65vw 70vh #fff;
+            animation: starScroll 120s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes starScroll {
+            from { transform: translateY(0); }
+            to { transform: translateY(-1000px); }
+        }
+
+        /* グラスモフィズム・コンテナ（ホログラムシールド） */
         .container { 
             background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             width: 100%; 
             max-width: 440px; 
             padding: 1.8rem; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+            border-radius: 20px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1); 
             text-align: center; 
             box-sizing: border-box;
             position: relative;
+            z-index: 10;
         }
         .hidden { display: none !important; }
         
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             margin-bottom: 5px;
-            color: #2c3e50;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+            letter-spacing: 1px;
         }
         .subtitle {
-            font-size: 0.9rem;
-            color: #7f8c8d;
+            font-size: 0.85rem;
+            color: #94a3b8;
             margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
-        /* ユーザーバー（ヘッダー） */
+        /* 宇宙空間を浮遊するキャラクター画像枠 */
+        .character-avatar {
+            width: 110px;
+            height: 110px;
+            margin: 10px auto 18px auto;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+            background-color: rgba(6, 8, 20, 0.8);
+            object-fit: contain;
+            display: block;
+            animation: floatAstronaut 4s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+        .character-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* 無重力フワフワアニメーション */
+        @keyframes floatAstronaut {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(-3deg); }
+        }
+
+        /* ユーザーバー（スペースコクピットヘッダー） */
         .user-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #edf2f7;
+            background: rgba(255, 255, 255, 0.07);
             padding: 8px 12px;
             border-radius: 8px;
             margin-bottom: 15px;
             font-size: 0.8rem;
-            color: #4a5568;
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .user-email {
             font-weight: bold;
@@ -70,10 +133,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 200px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
         }
         .logout-btn {
-            background: #e2e8f0;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.15);
             padding: 4px 8px;
             margin: 0;
             border-radius: 4px;
@@ -81,22 +145,26 @@
             font-weight: bold;
             cursor: pointer;
             width: auto;
-            color: #4a5568;
+            color: #cbd5e1;
+            transition: 0.2s;
         }
         .logout-btn:hover {
-            background: #cbd5e0;
+            background: var(--error);
+            color: #fff;
+            border-color: var(--error);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
         }
 
-        /* 統計情報ダッシュボード */
+        /* 統計ダッシュボード（ホログラムモニター風） */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin-bottom: 15px;
-            background: #f7fafc;
+            background: rgba(255, 255, 255, 0.04);
             padding: 12px;
             border-radius: 12px;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         .stat-card {
             display: flex;
@@ -106,13 +174,20 @@
         .stat-val {
             font-size: 1.25rem;
             font-weight: 800;
-            color: #2d3748;
+            color: #fff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
-        .stat-val.mastered { color: var(--primary); }
-        .stat-val.review { color: var(--error); }
+        .stat-val.mastered { 
+            color: #00ffcc; 
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
+        }
+        .stat-val.review { 
+            color: var(--error); 
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+        }
         .stat-lbl {
             font-size: 0.65rem;
-            color: #718096;
+            color: #94a3b8;
             margin-top: 2px;
         }
 
@@ -122,9 +197,10 @@
         }
         .auth-form h2 {
             font-size: 1.3rem;
-            color: #2c3e50;
+            color: #fff;
             margin-bottom: 15px;
             text-align: center;
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
         }
         .form-group {
             margin-bottom: 12px;
@@ -134,19 +210,23 @@
             font-size: 0.8rem;
             font-weight: bold;
             margin-bottom: 4px;
-            color: #4a5568;
+            color: #cbd5e1;
         }
         .form-group input {
             width: 100%;
             padding: 10px;
+            background: rgba(6, 8, 20, 0.5);
             border: 2px solid var(--border);
             border-radius: 8px;
             box-sizing: border-box;
             font-size: 0.95rem;
+            color: #fff;
             outline: none;
+            transition: all 0.2s;
         }
         .form-group input:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
         }
         .auth-switch {
             font-size: 0.8rem;
@@ -155,22 +235,24 @@
             text-align: center;
             margin-top: 15px;
             font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 242, 254, 0.2);
         }
         .auth-switch:hover {
             text-decoration: underline;
+            color: #fff;
         }
         .guest-divider {
             display: flex;
             align-items: center;
             text-align: center;
-            color: #a0aec0;
+            color: #64748b;
             font-size: 0.8rem;
             margin: 15px 0;
         }
         .guest-divider::before, .guest-divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         .guest-divider:not(:empty)::before { margin-right: .55em; }
         .guest-divider:not(:empty)::after { margin-left: .55em; }
@@ -178,11 +260,13 @@
         .guest-btn {
             background: transparent;
             border: 2px solid var(--border);
-            color: #4a5568;
+            color: #cbd5e1;
         }
         .guest-btn:hover {
-            background: #edf2f7;
-            border-color: #cbd5e0;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
         }
 
         /* セクション・問題数設定ラベル */
@@ -191,7 +275,7 @@
             font-weight: bold;
             font-size: 0.9rem;
             margin: 12px 0 6px 2px;
-            color: #34495e;
+            color: #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -201,16 +285,18 @@
             font-size: 0.75rem;
             color: var(--primary);
             font-weight: normal;
+            text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
         }
 
-        /* 3状態・2状態トグル共通 */
+        /* 3状態・2状態トグル共通（コクピット計器風） */
         .toggle-container {
             display: flex;
-            background: #edf2f7;
+            background: rgba(6, 8, 20, 0.6);
             padding: 4px;
             border-radius: 10px;
             margin-bottom: 12px;
             gap: 2px;
+            border: 1px solid var(--border);
         }
         .toggle-btn {
             flex: 1;
@@ -220,15 +306,15 @@
             border-radius: 8px;
             background: transparent;
             font-weight: bold;
-            color: #718096;
+            color: #64748b;
             font-size: 0.8rem;
             transition: all 0.2s;
             white-space: nowrap;
         }
         .toggle-btn.active {
-            background: white;
-            color: #2d3748;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: var(--primary);
+            color: #060814;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
         }
 
         /* 複数セクション選択エリア */
@@ -238,7 +324,7 @@
             padding: 10px;
             max-height: 150px;
             overflow-y: auto;
-            background: #fff;
+            background: rgba(6, 8, 20, 0.4);
             margin-bottom: 8px;
         }
         .section-grid {
@@ -250,21 +336,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             padding: 6px;
             font-size: 0.8rem;
             cursor: pointer;
             user-select: none;
             transition: all 0.15s;
-            background: #fafafa;
+            background: rgba(255, 255, 255, 0.02);
             font-weight: 500;
+            color: #cbd5e1;
         }
         .section-item.selected {
-            background-color: #e8f5e9;
+            background-color: rgba(0, 242, 254, 0.15);
             border-color: var(--primary);
-            color: var(--primary-hover);
+            color: var(--primary);
             font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
         }
 
         /* 一括操作ボタン */
@@ -278,13 +366,15 @@
             padding: 5px 8px;
             font-size: 0.75rem;
             margin: 0;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 6px;
-            background: #fff;
-            color: #4a5568;
+            background: rgba(255,255,255,0.05);
+            color: #cbd5e1;
         }
         .bulk-btn:hover {
-            background: #f7fafc;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: var(--primary);
         }
 
         /* クイック範囲選択用セレクト */
@@ -293,14 +383,14 @@
             gap: 8px;
             align-items: center;
             margin-bottom: 12px;
-            background: #f8fafc;
+            background: rgba(6, 8, 20, 0.3);
             padding: 6px 10px;
             border-radius: 8px;
             border: 1px dashed var(--border);
         }
         .range-select-container span {
             font-size: 0.8rem;
-            color: #4a5568;
+            color: #cbd5e1;
             white-space: nowrap;
         }
         .range-select-container select {
@@ -317,14 +407,15 @@
             border-radius: 8px; 
             border: 2px solid var(--border); 
             font-size: 0.95rem;
-            background-color: #fff;
-            color: var(--text);
+            background-color: rgba(6, 8, 20, 0.8);
+            color: #fff;
             outline: none;
             transition: border-color 0.2s;
             box-sizing: border-box;
         }
         select:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
         }
         
         /* ボタンのデザイン */
@@ -332,73 +423,78 @@
             width: 100%; 
             padding: 12px; 
             margin: 6px 0; 
-            border: 2px solid #edf2f7; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
             border-radius: 10px; 
-            background: white; 
+            background: rgba(255, 255, 255, 0.05); 
             cursor: pointer; 
             transition: all 0.2s ease; 
             font-size: 0.95rem; 
             font-weight: 600;
-            color: #4a5568;
+            color: #cbd5e1;
             box-sizing: border-box;
         }
         button:hover:not(:disabled) { 
-            background: #f7fafc; 
-            border-color: #cbd5e0; 
+            background: rgba(0, 242, 254, 0.08); 
+            border-color: var(--primary); 
+            color: #fff;
             transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
         }
         button:active:not(:disabled) {
             transform: translateY(1px);
         }
         button:disabled { 
             cursor: not-allowed; 
-            opacity: 0.8; 
+            opacity: 0.5; 
         }
         
         .start-btn { 
-            background: var(--primary); 
-            color: white; 
+            background: linear-gradient(135deg, var(--primary) 0%, #4facfe 100%); 
+            color: #060814; 
             border: none; 
             font-weight: bold; 
             margin-top: 10px; 
             font-size: 1rem;
-            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
         }
         .start-btn:hover { 
-            background: var(--primary-hover); 
-            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
+            background: linear-gradient(135deg, #00e1ec 0%, #3b96e5 100%); 
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+            color: #060814;
         }
 
-        /* 制限時間バーのデザイン（サバイバルモード用） */
+        /* 制限時間バー（サバイバルコックピットエネルギーバー） */
         .timer-container {
             width: 100%;
-            height: 8px;
-            background: #edf2f7;
-            border-radius: 4px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
             margin-bottom: 15px;
             overflow: hidden;
             display: none;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
         }
         .timer-bar {
             width: 100%;
             height: 100%;
             background: var(--primary);
             transition: width 0.05s linear, background-color 0.3s;
+            box-shadow: 0 0 10px var(--primary);
         }
 
         /* ランキングボード */
         .ranking-container {
             margin-top: 20px;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 15px;
             text-align: left;
         }
         .ranking-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
-            color: #2c3e50;
+            color: #fff;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -406,8 +502,9 @@
         }
         .ranking-title span {
             font-size: 0.75rem;
-            color: var(--info);
+            color: var(--primary);
             cursor: pointer;
+            text-shadow: 0 0 5px rgba(0, 242, 254, 0.2);
         }
         .ranking-list {
             list-style: none;
@@ -419,7 +516,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 6px;
-            border-bottom: 1px solid #f7fafc;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.85rem;
         }
         .ranking-item:last-child {
@@ -435,39 +532,40 @@
             font-weight: bold;
             font-size: 0.75rem;
             margin-right: 8px;
-            background: #edf2f7;
-            color: #718096;
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
         }
-        .rank-1 .rank-badge { background: var(--gold); color: white; }
-        .rank-2 .rank-badge { background: #cbd5e0; color: white; }
-        .rank-3 .rank-badge { background: #ed8936; color: white; }
+        .rank-1 .rank-badge { background: var(--gold); color: #060814; box-shadow: 0 0 8px var(--gold); }
+        .rank-2 .rank-badge { background: #e2e8f0; color: #060814; }
+        .rank-3 .rank-badge { background: #cd7f32; color: #060814; }
         .rank-name {
             font-weight: 500;
-            color: #2d3748;
+            color: #e2e8f0;
         }
         .rank-score {
             font-weight: bold;
             color: var(--primary);
+            text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
         }
         .no-rank {
             text-align: center;
-            color: #a0aec0;
+            color: #64748b;
             font-size: 0.8rem;
             padding: 15px 0;
         }
         
         /* クイズ演出用 */
         .correct { 
-            background-color: #e6fffa !important; 
-            border-color: var(--primary) !important; 
-            color: #234e52 !important; 
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+            background-color: rgba(0, 255, 204, 0.15) !important; 
+            border-color: #00ffcc !important; 
+            color: #e6fffa !important; 
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
         }
         .wrong { 
-            background-color: #fff5f5 !important; 
+            background-color: rgba(255, 0, 127, 0.15) !important; 
             border-color: var(--error) !important; 
-            color: #742a2a !important; 
-            box-shadow: 0 0 8px rgba(244, 67, 54, 0.2);
+            color: #fff5f5 !important; 
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
         }
         
         .shake { animation: shake 0.4s ease-in-out; }
@@ -479,9 +577,10 @@
         
         #progress { 
             font-size: 0.9rem; 
-            color: #718096; 
+            color: #cbd5e1; 
             margin-bottom: 10px; 
             font-weight: bold;
+            letter-spacing: 1px;
         }
         #question-meaning { 
             margin: 20px 0; 
@@ -490,30 +589,33 @@
             flex-direction: column;
             align-items: center; 
             justify-content: center; 
-            font-size: 1.3rem;
+            font-size: 1.45rem;
             line-height: 1.4;
-            color: #2d3748;
-            border-bottom: 2px dashed #edf2f7;
+            color: #fff;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.1);
             padding-bottom: 15px;
+            text-shadow: 0 0 8px rgba(255,255,255,0.4);
         }
         .question-meta {
             font-size: 0.75rem;
-            color: #a0aec0;
+            color: #94a3b8;
             margin-top: 6px;
+            letter-spacing: 1px;
         }
 
         #loading-overlay {
-            color: #4a5568;
+            color: #cbd5e1;
             font-weight: 500;
         }
         .spinner {
-            border: 4px solid #f3f3f3;
+            border: 4px solid rgba(255,255,255,0.1);
             border-top: 4px solid var(--primary);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -524,46 +626,53 @@
         .modal-backdrop {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             padding: 15px;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: var(--card-bg);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--primary);
+            color: #fff;
             padding: 20px;
             border-radius: 12px;
             max-width: 340px;
             width: 100%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.3);
             text-align: center;
         }
         .modal-title {
             font-size: 1.1rem;
             font-weight: bold;
-            color: #2d3748;
+            color: #fff;
             margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--primary);
         }
         .modal-msg {
             font-size: 0.9rem;
-            color: #4a5568;
+            color: #cbd5e1;
             margin-bottom: 18px;
             line-height: 1.4;
         }
         .modal-input-field {
             width: 100%;
             padding: 10px;
+            background: rgba(6, 8, 20, 0.8);
             border: 2px solid var(--border);
             border-radius: 8px;
             margin-bottom: 15px;
             box-sizing: border-box;
             outline: none;
             font-size: 0.95rem;
+            color: #fff;
         }
         .modal-input-field:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
         }
         .modal-buttons {
             display: flex;
@@ -578,9 +687,9 @@
 
         /* システムログ・エラー表示用コンソールのスタイル */
         .console-box {
-            background-color: #f7fafc;
-            border: 1px solid #cbd5e0;
-            color: #4a5568;
+            background: rgba(6, 8, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
             padding: 12px;
             border-radius: 8px;
             margin-top: 20px;
@@ -592,9 +701,32 @@
             transition: all 0.3s ease;
         }
         .console-box.error-state {
-            background-color: #fff5f5;
-            border-color: #feb2b2;
-            color: #c53030;
+            background-color: rgba(255, 0, 127, 0.1);
+            border-color: var(--error);
+            color: #ffccd5;
+        }
+
+        /* クイズ画面で正解時にキャラクターの周りに舞う星雲スターバースト粒子 */
+        .sparkle-burst {
+            position: absolute;
+            pointer-events: none;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: explodeSparkle 0.8s ease-out forwards;
+        }
+
+        @keyframes explodeSparkle {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -607,9 +739,16 @@
         <button class="logout-btn" onclick="triggerLogout()">ログアウト</button>
     </div>
 
+    <!-- キャラクター表示（画像ロード失敗時はSVG宇宙飛行士でフォールバック） -->
+    <img src="03%20%E5%AD%A6%E3%83%A9%E3%83%B3.jpg" 
+         id="app-character" 
+         class="character-avatar" 
+         alt="ナビゲーター星学ランくん"
+         onerror="fallbackToDefaultAstronaut(this)">
+
     <!-- 0. 認証画面（ログイン/新規登録） -->
     <div id="auth-screen" class="hidden">
-        <h1>単語学習クイズ</h1>
+        <h1>宇宙単語クイズ</h1>
         <p class="subtitle">ログイン / アカウント登録</p>
         
         <div class="auth-form" id="login-form-area">
@@ -632,7 +771,7 @@
 
     <!-- 1. 設定画面 -->
     <div id="home-screen" class="hidden">
-        <h1>単語学習クイズ</h1>
+        <h1>宇宙単語クイズ</h1>
         
         <!-- 学習進捗ダッシュボード -->
         <div class="dashboard" id="user-dashboard">
@@ -706,7 +845,7 @@
         </div>
         
         <!-- チャレンジモードの案内（チャレンジモードのみで表示） -->
-        <div id="challenge-info-area" class="hidden" style="background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 10px; text-align: left; font-size: 0.85rem; color: #b45309; margin-bottom: 15px;">
+        <div id="challenge-info-area" class="hidden" style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--gold); padding: 12px; border-radius: 10px; text-align: left; font-size: 0.85rem; color: #fef08a; margin-bottom: 15px;">
             <strong>🏆 全国サバイバルチャレンジルール:</strong>
             <ul style="margin: 5px 0 0 15px; padding: 0;">
                 <li>全2442単語からランダムに次々と出題されます。</li>
@@ -744,7 +883,7 @@
 
     <!-- 2. クイズ画面 -->
     <div id="quiz-screen" class="hidden">
-        <!-- 10秒カウントダウン用プログレスバー（チャレンジモードでのみ表示される） -->
+        <!-- 10秒カウントダウン用プログレスバー -->
         <div class="timer-container" id="quiz-timer-container">
             <div class="timer-bar" id="quiz-timer-bar"></div>
         </div>
@@ -762,7 +901,7 @@
     <!-- 3. 結果画面 -->
     <div id="result-screen" class="hidden">
         <h2>結果発表</h2>
-        <p id="final-score" style="font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 25px 0;"></p>
+        <p id="final-score" style="font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 25px 0; text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);"></p>
         <button class="start-btn" onclick="restartHome()">設定に戻る</button>
     </div>
 </div>
@@ -832,6 +971,47 @@
             osc.stop(audioCtx.currentTime + duration);
         } catch (e) {
             console.warn("Audio playback failed:", e);
+        }
+    }
+
+    // --- キャラクターのデフォルト画像へのフォールバック（学ランキャラクターが見つからない場合用） ---
+    window.fallbackToDefaultAstronaut = function(imgElement) {
+        // 画像がロードできない場合は、学ラン姿を模した可愛い星目のSVGスペースマンをリアルタイム生成して差し替えます
+        imgElement.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%230f172a" stroke="%2300f2fe" stroke-width="3"/><path d="M50,20 C65,20 70,35 70,45 C70,55 50,75 50,75 C50,75 30,55 30,45 C30,35 35,20 50,20 Z" fill="%2300f2fe" opacity="0.3"/><circle cx="50" cy="40" r="18" fill="%23ffd166"/><circle cx="43" cy="38" r="4" fill="%23fff"/><circle cx="57" cy="38" r="4" fill="%23fff"/><path d="M43,38 L40,35 L46,35 Z" fill="%23060814"/><path d="M57,38 L54,35 L60,35 Z" fill="%23060814"/><path d="M45,48 Q50,53 55,48" stroke="%23060814" stroke-width="2" fill="none"/><path d="M35,60 L65,60 L60,85 L40,85 Z" fill="%231e293b" stroke="%23ffd166" stroke-width="2"/><circle cx="50" cy="72" r="3" fill="%23ffd166"/></svg>`;
+    };
+
+    // --- 正解時にキャラクターの周りに超新星キラキラを散りばめる演出 ---
+    function triggerSupernovaEffect() {
+        const charImg = document.getElementById("app-character");
+        const rect = charImg.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 20; i++) {
+            const sparkle = document.createElement("div");
+            sparkle.className = "sparkle-burst";
+            
+            // ランダムな方向に散らばらせる
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 40 + Math.random() * 80;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            sparkle.style.setProperty('--tx', `${tx}px`);
+            sparkle.style.setProperty('--ty', `${ty}px`);
+            sparkle.style.left = `${centerX}px`;
+            sparkle.style.top = `${centerY}px`;
+            
+            // 色をランダム（ネオンブルー or ホワイト or イエロー）
+            const colors = ["#00f2fe", "#ffffff", "#fef08a", "#a8ff78"];
+            sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            document.body.appendChild(sparkle);
+            
+            // アニメーション終了後に要素を削除
+            setTimeout(() => {
+                sparkle.remove();
+            }, 800);
         }
     }
 
@@ -1063,13 +1243,6 @@
         }
     }
 
-    // HTMLエスケープ処理（XSS対策）
-    function escapeHTML(str) {
-        return str.replace(/[&<>'"]/g, 
-            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-        );
-    }
-
     // 認証モード切り替え
     window.toggleAuthMode = () => {
         isRegisterMode = !isRegisterMode;
@@ -1180,7 +1353,7 @@
             challengeInfoArea.classList.add("hidden");
         } else if (type === 'challenge') {
             sectionSelectionArea.classList.add("hidden");
-            questionCountArea.classList.add("hidden"); // チャレンジはサバイバルエンドレス
+            questionCountArea.classList.add("hidden"); 
             challengeInfoArea.classList.remove("hidden");
         }
     };
@@ -1276,7 +1449,6 @@
             const randomNum = Math.floor(Math.random() * maxWords) + 1;
             const randomId = "word_" + String(randomNum).padStart(4, '0');
             
-            // 既出でなければ取得を試みる
             if (!usedWordIds.has(randomId)) {
                 try {
                     const rSnap = await getDoc(doc(targetCol, randomId));
@@ -1284,7 +1456,7 @@
                         const data = rSnap.data();
                         challengeQueue.push({ id: rSnap.id, ...data });
                         usedWordIds.add(randomId);
-                        return; // フェッチ成功
+                        return; 
                     }
                 } catch (e) {
                     console.warn(`キュー補充失敗 ${randomId}:`, e);
@@ -1292,7 +1464,6 @@
             }
         }
         
-        // フォールバック（ネットワークエラー保護）
         const fallbacks = [
             { word: "understand", meaning: "〜を理解する", section: "1" },
             { word: "express", meaning: "〜を表現する", section: "1" },
@@ -1308,7 +1479,7 @@
         });
     }
 
-    // --- タイマー制御システム（1問10秒制限） ---
+    // --- タイマー制御システム ---
     function startTimer() {
         stopTimer();
         if (targetType !== "challenge") {
@@ -1323,7 +1494,7 @@
         bar.style.width = "100%";
         bar.style.backgroundColor = "var(--primary)";
 
-        const tickRate = 50; // 50msごとにバー幅を更新して滑らかに見せる
+        const tickRate = 50; 
         const totalTicks = (maxTime * 1000) / tickRate;
         let currentTick = 0;
 
@@ -1332,11 +1503,10 @@
             const percent = 100 - (currentTick / totalTicks) * 100;
             bar.style.width = `${percent}%`;
 
-            // 残り時間に応じたカラーグラデーション演出
             if (percent < 30) {
-                bar.style.backgroundColor = "var(--error)"; // 残り3秒未満で赤色
+                bar.style.backgroundColor = "var(--error)"; 
             } else if (percent < 60) {
-                bar.style.backgroundColor = "var(--gold)";  // 残り6秒未満で黄色
+                bar.style.backgroundColor = "var(--gold)";  
             }
 
             if (currentTick >= totalTicks) {
@@ -1359,11 +1529,9 @@
         document.getElementById("app").classList.add("shake");
         setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
 
-        // 全ての回答ボタンを無効化
         const buttons = document.querySelectorAll("#choices-area button");
         buttons.forEach(b => b.disabled = true);
 
-        // 正解の単語をハイライト表示
         const currentQuiz = quizDataList[currentIndex];
         const correctAnswer = quizMode === "en-ja" ? currentQuiz.meaning : currentQuiz.word;
         buttons.forEach(b => {
@@ -1372,10 +1540,8 @@
             }
         });
 
-        // タイムアップの旨をログ出力
         showDebug(`タイムアップ！10秒が経過しました。ゲームオーバーです。`, false);
 
-        // 1.2秒後に結果画面に遷移
         setTimeout(() => {
             showResult();
         }, 1200);
@@ -1390,10 +1556,8 @@
             return;
         }
 
-        // 通常モード用問題数
         const count = parseInt(document.getElementById("count-select").value);
 
-        // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
         document.getElementById("loading-overlay").classList.remove("hidden");
         document.getElementById("loading-text").innerText = "問題を準備中...";
@@ -1406,7 +1570,6 @@
         let accumulatedDocs = [];
 
         try {
-            // パス有効検証
             let targetColRef = null;
             for (const colRef of possibleCollections) {
                 try {
@@ -1428,22 +1591,18 @@
             currentCollectionRef = targetColRef;
 
             if (targetType === "challenge") {
-                // 【全国サバイバル（エンドレス）の初期化】
                 showDebug("全国サバイバル用の先読みロード中...", false);
                 challengeQueue = [];
                 usedWordIds.clear();
                 
-                // 最初に裏で4問同時にロードして先読みプールを埋める
                 const initPromises = [];
                 for (let i = 0; i < 4; i++) {
                     initPromises.push(fetchRandomWordToQueue());
                 }
                 await Promise.all(initPromises);
                 
-                // 初期問題リストとしてキューを展開
                 quizDataList = [...challengeQueue];
             } else if (targetType === "weak") {
-                // 苦手な単語のみ
                 const weakWordList = [];
                 userProgressMap.forEach((data, wordId) => {
                     if (data.wrongCount > 0) {
@@ -1467,7 +1626,6 @@
                 accumulatedDocs.sort(() => Math.random() - 0.5);
                 quizDataList = accumulatedDocs.slice(0, count);
             } else {
-                // 通常のセクション別単語取得
                 const sectionList = Array.from(selectedSections);
                 const fetchPromises = sectionList.map(async (sectionNum) => {
                     const sectionStr = String(sectionNum);
@@ -1504,7 +1662,6 @@
                 return;
             }
 
-            // クイズ画面へ移行
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("quiz-screen").classList.remove("hidden");
             
@@ -1523,7 +1680,6 @@
         if (!currentUser) return;
 
         try {
-            // パス: /artifacts/{appId}/users/{userId}/progress/{wordId} (RULE 1 準拠)
             const progressDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'progress', wordId);
             
             await setDoc(progressDocRef, {
@@ -1535,7 +1691,6 @@
                 lastPracticed: serverTimestamp()
             }, { merge: true });
 
-            // メモリ同期
             if (!userProgressMap.has(wordId)) {
                 userProgressMap.set(wordId, {
                     word: wordData.word,
@@ -1560,7 +1715,6 @@
         if (!currentUser) return;
 
         try {
-            // 現在のユーザーの自己記録がすでに存在するかチェック (RULE 1 準拠)
             const userRankDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'ranking', currentUser.uid);
             const rSnap = await getDoc(userRankDocRef);
             
@@ -1572,9 +1726,7 @@
                 previousUsername = rData.username || "";
             }
 
-            // 今回の連続正解スコアが自己ベストを更新した場合のみ登録（初挑戦も含む）
             if (score > previousHighScore) {
-                // ニックネーム入力ダイアログ
                 const nickname = await showModal("🏆 ハイスコア更新！", `自己新記録 ${score}問連続正解を達成！全国ランキングに登録するニックネームを入力してください：`, {
                     showInput: true,
                     placeholder: "ニックネーム (15文字以内)",
@@ -1585,7 +1737,6 @@
                     document.getElementById("loading-overlay").classList.remove("hidden");
                     document.getElementById("loading-text").innerText = "ランキングを更新中...";
                     
-                    // Firestoreへ保存 (RULE 1 準拠)
                     await setDoc(userRankDocRef, {
                         username: String(nickname).trim().substring(0, 15),
                         score: score,
@@ -1606,7 +1757,6 @@
 
     // 問題表示
     async function showNextQuestion() {
-        // サバイバル（チャレンジ）モードの終了判定は不正解時に行うため、ここではインデックス超過チェックは通常モードでのみ適用
         if (targetType !== "challenge" && currentIndex >= quizDataList.length) {
             showResult();
             return;
@@ -1615,23 +1765,15 @@
         let currentQuiz = null;
 
         if (targetType === "challenge") {
-            // キューから1問取り出し、即座に次の問題を非同期で1問補充
             currentQuiz = challengeQueue.shift();
-            
-            // 最新の問題をquizDataListに格納して同期
             quizDataList[currentIndex] = currentQuiz;
-            
-            // バックグラウンドで次の問題を1問補充 (ロード遅延なしのエンドレス進行)
             fetchRandomWordToQueue();
-            
-            // 進捗表示を「現在の連続正答数」に変更
             document.getElementById("progress").innerText = `連続正答数: ${currentIndex} 問`;
         } else {
             currentQuiz = quizDataList[currentIndex];
             document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
         }
 
-        // 出題モードによって問題と「正解値」を切り替える
         let questionText = "";
         let correctAnswerValue = "";
 
@@ -1646,7 +1788,6 @@
         document.getElementById("question-text").innerText = questionText;
         document.getElementById("question-meta-info").innerText = `Section ${currentQuiz.section || '?'}`;
 
-        // ハズレの選択肢を作成
         let choices = [correctAnswerValue];
         const maxWords = 2442;
         let attempts = 0;
@@ -1673,7 +1814,6 @@
             }
         }
 
-        // 緊急用フォールバック
         const enFallbacks = ["understand", "express", "develop", "provide", "improve", "create"];
         const jaFallbacks = ["理解する", "表現する", "開発する", "提供する", "向上させる", "創造する"];
         const fallbacks = quizMode === "en-ja" ? jaFallbacks : enFallbacks;
@@ -1698,31 +1838,30 @@
             area.appendChild(btn);
         });
 
-        // 10秒タイマースタート
         startTimer();
     }
 
     // 正誤判定
     async function checkAnswer(btn, isCorrect) {
-        stopTimer(); // 回答した時点でタイマーを停止
+        stopTimer(); 
 
         const buttons = document.querySelectorAll("#choices-area button");
         buttons.forEach(b => b.disabled = true);
 
         const currentQuiz = quizDataList[currentIndex];
 
-        // 判定演出
         if (isCorrect) {
             score++;
             btn.classList.add("correct");
             playTone(880, 'sine', 0.4);
+            // 正解時は超新星スターバーストのエフェクトをキャラクターを中心に展開！
+            triggerSupernovaEffect();
         } else {
             btn.classList.add("wrong");
             document.getElementById("app").classList.add("shake");
             playTone(150, 'sawtooth', 0.4);
             setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
 
-            // 間違えた場合は、正解の単語もハイライト
             const correctAnswer = quizMode === "en-ja" ? currentQuiz.meaning : currentQuiz.word;
             buttons.forEach(b => {
                 if (b.innerText === correctAnswer) {
@@ -1731,19 +1870,16 @@
             });
         }
 
-        // Firestoreに進捗を保存
         if (currentQuiz && currentQuiz.id) {
             updateWordProgress(currentQuiz.id, isCorrect, currentQuiz);
         }
 
-        // 1.2秒後に次へ遷移（またはゲームオーバー処理）
         setTimeout(() => {
             if (targetType === "challenge") {
                 if (isCorrect) {
                     currentIndex++;
                     showNextQuestion();
                 } else {
-                    // 間違えたら即サバイバル終了
                     showResult();
                 }
             } else {
