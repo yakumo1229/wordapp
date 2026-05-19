@@ -12,6 +12,7 @@
             --bg: #f5f7fa;
             --text: #333;
             --card-bg: #ffffff;
+            --border: #e2e8f0;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -28,7 +29,7 @@
         .container { 
             background: var(--card-bg); 
             width: 100%; 
-            max-width: 420px; 
+            max-width: 440px; 
             padding: 2rem; 
             border-radius: 16px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
@@ -52,18 +53,131 @@
         .select-label {
             text-align: left;
             font-weight: bold;
-            font-size: 0.9rem;
-            margin: 15px 0 5px 2px;
+            font-size: 0.95rem;
+            margin: 15px 0 8px 2px;
             color: #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* セレクトボックス */
+        .select-label span {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: normal;
+        }
+
+        /* 出題モードトグル */
+        .mode-container {
+            display: flex;
+            background: #edf2f7;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            margin: 0;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            font-weight: bold;
+            color: #718096;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: white;
+            color: #2d3748;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 複数セクション選択エリア */
+        .section-container {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .section-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            background: #fafafa;
+            font-weight: 500;
+        }
+        .section-item.selected {
+            background-color: #e8f5e9;
+            border-color: var(--primary);
+            color: var(--primary-hover);
+            font-weight: bold;
+        }
+
+        /* 一括操作ボタン */
+        .bulk-buttons {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .bulk-btn {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            margin: 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+            color: #4a5568;
+        }
+        .bulk-btn:hover {
+            background: #f7fafc;
+        }
+
+        /* クイック範囲選択用セレクト */
+        .range-select-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+        .range-select-container span {
+            font-size: 0.85rem;
+            color: #4a5568;
+            white-space: nowrap;
+        }
+        .range-select-container select {
+            margin: 0;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+        
+        /* 一般セレクトボックス */
         select { 
             width: 100%; 
             padding: 12px; 
             margin-bottom: 15px; 
             border-radius: 8px; 
-            border: 2px solid #e2e8f0; 
+            border: 2px solid var(--border); 
             font-size: 1rem;
             background-color: #fff;
             color: var(--text);
@@ -108,7 +222,7 @@
             color: white; 
             border: none; 
             font-weight: bold; 
-            margin-top: 25px; 
+            margin-top: 15px; 
             font-size: 1.1rem;
             box-shadow: 0 4px 6px rgba(76, 175, 80, 0.15);
         }
@@ -199,26 +313,45 @@
         <h1>単語学習クイズ</h1>
         <p class="subtitle">word-app-sokutan</p>
         
-        <div class="select-label">セクションを選択</div>
-        <select id="section-select">
-            <option value="1">Section 1</option>
-            <option value="2">Section 2</option>
-            <option value="3">Section 3</option>
-            <option value="4">Section 4</option>
-            <option value="5">Section 5</option>
-            <option value="6">Section 6</option>
-            <option value="7">Section 7</option>
-            <option value="8">Section 8</option>
-            <option value="9">Section 9</option>
-            <option value="10">Section 10</option>
-        </select>
+        <div class="select-label">出題モード</div>
+        <div class="mode-container">
+            <button type="button" class="mode-btn active" id="mode-en-ja" onclick="setMode('en-ja')">英和 (英 → 和)</button>
+            <button type="button" class="mode-btn" id="mode-ja-en" onclick="setMode('ja-en')">和英 (和 → 英)</button>
+        </div>
+
+        <div class="select-label">
+            セクションを選択
+            <span id="selected-count">選択中: 0セクション</span>
+        </div>
         
-        <div class="select-label">問題数</div>
+        <!-- セクション一括操作ボタン -->
+        <div class="bulk-buttons">
+            <button type="button" class="bulk-btn" onclick="selectAllSections(true)">すべて選択</button>
+            <button type="button" class="bulk-btn" onclick="selectAllSections(false)">選択クリア</button>
+        </div>
+
+        <!-- 範囲一括指定スライダー/セレクト -->
+        <div class="range-select-container">
+            <span>範囲一括:</span>
+            <select id="range-start" onchange="selectRange()"></select>
+            <span>〜</span>
+            <select id="range-end" onchange="selectRange()"></select>
+        </div>
+
+        <!-- 複数セクション選択用のスクロール可能な格子 -->
+        <div class="section-container">
+            <div class="section-grid" id="section-grid-area">
+                <!-- JavaScriptで1から68まで動的に展開します -->
+            </div>
+        </div>
+        
+        <div class="select-label">最大問題数</div>
         <select id="count-select">
             <option value="5">5問</option>
             <option value="10" selected>10問</option>
             <option value="20">20問</option>
             <option value="30">30問</option>
+            <option value="50">50問</option>
         </select>
         
         <button class="start-btn" onclick="startQuiz()">学習開始！</button>
@@ -300,9 +433,103 @@
         }
     }
 
+    // クイズ設定用のグローバル変数
+    let selectedSections = new Set([1]); // デフォルトでSection 1を選択
+    let quizMode = "en-ja"; // デフォルトで英和モード
     let quizDataList = [];
     let currentIndex = 0;
     let score = 0;
+    let currentCollectionRef = null;
+
+    // UI初期構築
+    const maxSection = 68;
+    const gridArea = document.getElementById("section-grid-area");
+    const rangeStart = document.getElementById("range-start");
+    const rangeEnd = document.getElementById("range-end");
+
+    // 1〜68のセクションを動的に生成
+    for (let i = 1; i <= maxSection; i++) {
+        // グリッドアイテム
+        const item = document.createElement("div");
+        item.className = "section-item" + (selectedSections.has(i) ? " selected" : "");
+        item.innerText = `Sec ${i}`;
+        item.dataset.section = i;
+        item.onclick = () => toggleSection(i, item);
+        gridArea.appendChild(item);
+
+        // 範囲選択用セレクトメニューオプション
+        const optStart = document.createElement("option");
+        optStart.value = i;
+        optStart.innerText = `Sec ${i}`;
+        rangeStart.appendChild(optStart);
+
+        const optEnd = document.createElement("option");
+        optEnd.value = i;
+        optEnd.innerText = `Sec ${i}`;
+        if (i === 1) optEnd.selected = true; // デフォルト設定
+        rangeEnd.appendChild(optEnd);
+    }
+    updateSelectedCountDisplay();
+
+    // 出題モードの設定
+    window.setMode = (mode) => {
+        quizMode = mode;
+        document.getElementById("mode-en-ja").classList.toggle("active", mode === "en-ja");
+        document.getElementById("mode-ja-en").classList.toggle("active", mode === "ja-en");
+    };
+
+    // セクション個々の選択トグル
+    function toggleSection(sec, element) {
+        if (selectedSections.has(sec)) {
+            selectedSections.delete(sec);
+            element.classList.remove("selected");
+        } else {
+            selectedSections.add(sec);
+            element.classList.add("selected");
+        }
+        updateSelectedCountDisplay();
+    }
+
+    // すべて選択 / すべて解除
+    window.selectAllSections = (select) => {
+        selectedSections.clear();
+        const items = gridArea.querySelectorAll(".section-item");
+        items.forEach(item => {
+            const sec = parseInt(item.dataset.section);
+            if (select) {
+                selectedSections.add(sec);
+                item.classList.add("selected");
+            } else {
+                item.classList.remove("selected");
+            }
+        });
+        updateSelectedCountDisplay();
+    };
+
+    // 範囲選択
+    window.selectRange = () => {
+        const start = parseInt(rangeStart.value);
+        const end = parseInt(rangeEnd.value);
+        
+        if (start > end) return; // 不正な範囲
+
+        selectedSections.clear();
+        const items = gridArea.querySelectorAll(".section-item");
+        items.forEach(item => {
+            const sec = parseInt(item.dataset.section);
+            if (sec >= start && sec <= end) {
+                selectedSections.add(sec);
+                item.classList.add("selected");
+            } else {
+                item.classList.remove("selected");
+            }
+        });
+        updateSelectedCountDisplay();
+    };
+
+    function updateSelectedCountDisplay() {
+        document.getElementById("selected-count").innerText = `選択中: ${selectedSections.size} セクション`;
+    }
 
     // デバッグメッセージを表示する関数
     function showDebug(msg) {
@@ -316,99 +543,104 @@
     window.startQuiz = async () => {
         initAudio(); 
         
-        const sectionVal = document.getElementById("section-select").value;
+        if (selectedSections.size === 0) {
+            alert("セクションを少なくとも1つ選択してください。");
+            return;
+        }
+
         const count = parseInt(document.getElementById("count-select").value);
 
         // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
         document.getElementById("loading-overlay").classList.remove("hidden");
 
-        const sectionNum = parseInt(sectionVal);
-        const sectionStr = String(sectionVal);
-        const zeroPaddedSection = String(sectionNum).padStart(2, '0');
-
-        // 調査対象のFirestoreパスのパターン（自動切り替え用）
-        // ルートの "vocabulary" と ネストされた "/artifacts/word-app-sokutan/public/data/vocabulary"
         const possibleCollections = [
             collection(db, "vocabulary"),
             collection(db, "artifacts", "word-app-sokutan", "public", "data", "vocabulary")
         ];
 
-        let snap = null;
-        let finalCollectionRef = null;
+        let accumulatedDocs = [];
+        let finalColRef = null;
 
         try {
-            // パターン1: ルートまたは指定コレクションを網羅的に探す
+            // 選択されたセクションごとに並行してFirestoreからデータを収集 (Promise.all)
+            // 複合クエリや巨大なINクエリを避けるため、セクションごとに個別にクエリを投げてフロントエンドでマージします
+            const sectionList = Array.from(selectedSections);
+            
+            showDebug(`選択セクションのフェッチを開始... [${sectionList.join(", ")}]`);
+
+            // 各コレクションパスを探索して、まずどちらのパスにデータがあるかを突き止めます
+            let targetColRef = null;
             for (const colRef of possibleCollections) {
-                showDebug(`データベース探索中: ${colRef.path}...`);
-                
-                // 1-A. 数値としてクエリをかける
-                const qNum = query(colRef, where("section", "==", sectionNum), limit(150));
-                snap = await getDocs(qNum);
-                
-                // 1-B. 空なら文字列としてクエリをかける
-                if (snap.empty) {
-                    const qStr = query(colRef, where("section", "==", sectionStr), limit(150));
-                    snap = await getDocs(qStr);
-                }
-
-                // 1-C. それでも空ならゼロパディング "01" で試す
-                if (snap.empty) {
-                    const qPad = query(colRef, where("section", "==", zeroPaddedSection), limit(150));
-                    snap = await getDocs(qPad);
-                }
-
-                // データが見つかれば探索を終了する
-                if (!snap.empty) {
-                    finalCollectionRef = colRef;
-                    showDebug(`データの取得に成功しました！(パス: ${colRef.path})`);
-                    break;
-                }
-            }
-
-            // それでも全く見つからない場合は、コレクション全体の状況（そもそも読み取り自体ができるか）をテスト
-            if (!snap || snap.empty) {
-                showDebug(`全探索パターンで指定のセクションデータが見つかりませんでした。セキュリティルールまたはセクションの表記が合致していません。`);
-                
-                // コレクション内の先頭ドキュメントを1件テストフェッチ（接続・ルール・パス自体が生きているかのテスト）
-                for (const colRef of possibleCollections) {
-                    try {
-                        const testQ = query(colRef, limit(1));
-                        const testSnap = await getDocs(testQ);
-                        if (!testSnap.empty) {
-                            const sample = testSnap.docs[0].data();
-                            showDebug(`[テスト疎通成功] パス ${colRef.path} にデータは存在します。例: word=${sample.word}, section=${sample.section} (型の確認: ${typeof sample.section})`);
-                        } else {
-                            showDebug(`[テスト疎通] パス ${colRef.path} は空っぽ、またはドキュメントが存在しません。`);
-                        }
-                    } catch (testErr) {
-                        showDebug(`[テスト疎通失敗] パス ${colRef.path} へのアクセス権がありません: ${testErr.message}`);
+                try {
+                    const testQ = query(colRef, limit(1));
+                    const testSnap = await getDocs(testQ);
+                    if (!testSnap.empty) {
+                        targetColRef = colRef;
+                        break;
                     }
+                } catch (e) {
+                    console.log(`Path ${colRef.path} not accessible.`);
                 }
-                
-                throw new Error("NoVocabularyDataFound");
             }
 
-            // 取得したドキュメントを配列に変換
-            quizDataList = snap.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    ...data
-                };
+            if (!targetColRef) {
+                targetColRef = possibleCollections[0]; // デフォルトフォールバック
+            }
+
+            currentCollectionRef = targetColRef;
+
+            // 選択されたセクションごとに並行ロード
+            const fetchPromises = sectionList.map(async (sectionNum) => {
+                const sectionStr = String(sectionNum);
+                const zeroPaddedSection = String(sectionNum).padStart(2, '0');
+                
+                // 1. 数値で検索
+                let q = query(targetColRef, where("section", "==", sectionNum));
+                let snap = await getDocs(q);
+
+                // 2. 空なら文字列で検索
+                if (snap.empty) {
+                    q = query(targetColRef, where("section", "==", sectionStr));
+                    snap = await getDocs(q);
+                }
+
+                // 3. 空ならゼロパディング文字列で検索
+                if (snap.empty) {
+                    q = query(targetColRef, where("section", "==", zeroPaddedSection));
+                    snap = await getDocs(q);
+                }
+
+                return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            });
+
+            const results = await Promise.all(fetchPromises);
+            
+            // 全データをマージ
+            results.forEach(docsList => {
+                accumulatedDocs = accumulatedDocs.concat(docsList);
             });
 
             // 取得できた中からシャッフルして指定問題数に制限
-            quizDataList.sort(() => Math.random() - 0.5);
-            if (quizDataList.length > count) {
-                quizDataList = quizDataList.slice(0, count);
+            accumulatedDocs.sort(() => Math.random() - 0.5);
+            
+            if (accumulatedDocs.length > count) {
+                quizDataList = accumulatedDocs.slice(0, count);
+            } else {
+                quizDataList = accumulatedDocs;
+            }
+
+            if (quizDataList.length === 0) {
+                alert(`選択されたセクションに該当する単語データがFirestoreで見つかりませんでした。データ内の「section」フィールドの記述、またはセキュリティルールを確認してください。`);
+                location.reload();
+                return;
             }
 
             // クイズ画面へ移行
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("quiz-screen").classList.remove("hidden");
             
-            showNextQuestion(finalCollectionRef);
+            showNextQuestion();
         } catch (e) {
             console.error("Error fetching data: ", e);
             document.getElementById("loading-overlay").classList.add("hidden");
@@ -416,19 +648,16 @@
             
             let errMsg = e.message;
             if (e.message && e.message.includes("index")) {
-                errMsg = "Firestoreの「インデックス(索引)」が必要です。コンソールに表示されているリンクをクリックして追加してください。";
+                errMsg = "Firestoreのインデックスが必要です。デベロッパーツールのリンクから生成してください。";
             } else if (e.code === "permission-denied") {
-                errMsg = "Firestoreの読み取り権限（セキュリティルール）で拒否されました。ルールの期限や、公開設定を見直してください。";
-            } else if (e.message === "NoVocabularyDataFound") {
-                errMsg = `セクション ${sectionVal} に該当するデータが取得できません。上のデバッグ情報をご確認ください。`;
+                errMsg = "Firestoreの読み取り権限がありません。セキュリティルールを再度ご確認ください。";
             }
-            
             alert(errMsg);
         }
     };
 
     // 問題表示
-    async function showNextQuestion(collectionRef) {
+    async function showNextQuestion() {
         if (currentIndex >= quizDataList.length) {
             showResult();
             return;
@@ -436,17 +665,31 @@
 
         const currentQuiz = quizDataList[currentIndex];
         document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
-        document.getElementById("question-meaning").innerText = `意味：${currentQuiz.meaning}`;
+
+        // 出題モードによって問題の表示と「正解値」を切り替える
+        let questionText = "";
+        let correctAnswerValue = "";
+
+        if (quizMode === "en-ja") {
+            // 英和: 英語 → 和訳
+            questionText = `英単語： ${currentQuiz.word}`;
+            correctAnswerValue = currentQuiz.meaning;
+        } else {
+            // 和英: 和訳 → 英語
+            questionText = `意味： ${currentQuiz.meaning}`;
+            correctAnswerValue = currentQuiz.word;
+        }
+
+        document.getElementById("question-meaning").innerText = questionText;
 
         // ハズレの選択肢を作成（解決策A）
-        let choices = [currentQuiz.word];
+        let choices = [correctAnswerValue];
         const maxWords = 2442;
-        
         let attempts = 0;
-        // ハズレ作成時も、クイズ取得で使用した正確なコレクション参照(collectionRef)を使う
-        const targetCol = collectionRef || collection(db, "vocabulary");
+        
+        const targetCol = currentCollectionRef || collection(db, "vocabulary");
 
-        while (choices.length < 4 && attempts < 20) {
+        while (choices.length < 4 && attempts < 30) {
             attempts++;
             const randomNum = Math.floor(Math.random() * maxWords) + 1;
             const randomId = "word_" + String(randomNum).padStart(4, '0');
@@ -454,9 +697,11 @@
             try {
                 const rSnap = await getDoc(doc(targetCol, randomId));
                 if (rSnap.exists()) {
-                    const w = rSnap.data().word;
-                    if (w && !choices.includes(w)) {
-                        choices.push(w);
+                    const rData = rSnap.data();
+                    const wrongValue = quizMode === "en-ja" ? rData.meaning : rData.word;
+                    
+                    if (wrongValue && !choices.includes(wrongValue)) {
+                        choices.push(wrongValue);
                     }
                 }
             } catch (err) {
@@ -464,8 +709,11 @@
             }
         }
 
-        // 緊急時フォールバック
-        const fallbacks = ["understand", "express", "develop", "provide", "improve", "create"];
+        // 緊急用フォールバック
+        const enFallbacks = ["understand", "express", "develop", "provide", "improve", "create"];
+        const jaFallbacks = ["理解する", "表現する", "開発する", "提供する", "向上させる", "創造する"];
+        const fallbacks = quizMode === "en-ja" ? jaFallbacks : enFallbacks;
+        
         let fIndex = 0;
         while (choices.length < 4) {
             const fallbackWord = fallbacks[fIndex % fallbacks.length];
@@ -482,7 +730,7 @@
         choices.forEach(c => {
             const btn = document.createElement("button");
             btn.innerText = c;
-            btn.onclick = () => checkAnswer(btn, c === currentQuiz.word);
+            btn.onclick = () => checkAnswer(btn, c === correctAnswerValue);
             area.appendChild(btn);
         });
     }
