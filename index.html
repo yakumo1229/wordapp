@@ -35,6 +35,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
             text-align: center; 
             box-sizing: border-box;
+            position: relative;
         }
         .hidden { display: none !important; }
         
@@ -49,6 +50,110 @@
             margin-bottom: 25px;
         }
         
+        /* ユーザーバー（ヘッダー） */
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #edf2f7;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+        .user-email {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+        .logout-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 4px 8px;
+            margin: 0;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: auto;
+            color: #4a5568;
+        }
+        .logout-btn:hover {
+            background: #cbd5e0;
+        }
+
+        /* 認証フォーム */
+        .auth-form {
+            text-align: left;
+        }
+        .auth-form h2 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+        .auth-switch {
+            font-size: 0.85rem;
+            color: var(--primary);
+            cursor: pointer;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .auth-switch:hover {
+            text-decoration: underline;
+        }
+        .guest-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.8rem;
+            margin: 20px 0;
+        }
+        .guest-divider::before, .guest-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .guest-divider:not(:empty)::before { margin-right: .55em; }
+        .guest-divider:not(:empty)::after { margin-left: .55em; }
+
+        .guest-btn {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: #4a5568;
+        }
+        .guest-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
         /* セクション・問題数設定ラベル */
         .select-label {
             text-align: left;
@@ -308,10 +413,39 @@
 <body>
 
 <div class="container" id="app">
-    <!-- 1. 設定画面 -->
-    <div id="home-screen">
+    <!-- 共通：ユーザー情報表示バー -->
+    <div id="user-info-bar" class="user-bar hidden">
+        <span class="user-email" id="display-user-name">ゲストユーザー</span>
+        <button class="logout-btn" onclick="triggerLogout()">ログアウト</button>
+    </div>
+
+    <!-- 0. 認証画面（ログイン/新規登録） -->
+    <div id="auth-screen" class="hidden">
         <h1>単語学習クイズ</h1>
-        <p class="subtitle">word-app-sokutan</p>
+        <p class="subtitle">ログイン / アカウント登録</p>
+        
+        <div class="auth-form" id="login-form-area">
+            <h2 id="auth-title">ログイン</h2>
+            <div class="form-group">
+                <label for="auth-email">メールアドレス</label>
+                <input type="email" id="auth-email" placeholder="example@email.com">
+            </div>
+            <div class="form-group">
+                <label for="auth-password">パスワード</label>
+                <input type="password" id="auth-password" placeholder="6文字以上">
+            </div>
+            <button class="start-btn" id="auth-primary-btn" onclick="triggerAuthAction()">ログイン</button>
+            <div class="auth-switch" id="auth-switch-link" onclick="toggleAuthMode()">新しくアカウントを作成する</div>
+        </div>
+
+        <div class="guest-divider">または</div>
+        <button class="guest-btn" onclick="triggerGuestLogin()">ログインせずに開始する (ゲスト)</button>
+    </div>
+
+    <!-- 1. 設定画面 -->
+    <div id="home-screen" class="hidden">
+        <h1>単語学習クイズ</h1>
+        <p class="subtitle">学習オプションを設定</p>
         
         <div class="select-label">出題モード</div>
         <div class="mode-container">
@@ -382,7 +516,7 @@
     <div id="result-screen" class="hidden">
         <h2>結果発表</h2>
         <p id="final-score" style="font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 25px 0;"></p>
-        <button class="start-btn" onclick="location.reload()">もう一度解く</button>
+        <button class="start-btn" onclick="restartHome()">設定に戻る</button>
     </div>
 </div>
 
@@ -390,6 +524,7 @@
     // Firebase SDKの読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // --- Firebaseの設定 ---
     const firebaseConfig = {
@@ -403,6 +538,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
     // AudioContextの初期化
     let audioCtx = null;
@@ -433,13 +569,15 @@
         }
     }
 
-    // クイズ設定用のグローバル変数
+    // クイズ設定・認証用のグローバル変数
     let selectedSections = new Set([1]); // デフォルトでSection 1を選択
     let quizMode = "en-ja"; // デフォルトで英和モード
     let quizDataList = [];
     let currentIndex = 0;
     let score = 0;
     let currentCollectionRef = null;
+    let isRegisterMode = false; // ログインフォーム or 新規登録フォームのトグル状態
+    let currentUser = null;
 
     // UI初期構築
     const maxSection = 68;
@@ -470,6 +608,117 @@
         rangeEnd.appendChild(optEnd);
     }
     updateSelectedCountDisplay();
+
+    // 認証監視ライフサイクル
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        document.getElementById("loading-overlay").classList.add("hidden");
+        
+        if (user) {
+            // ログイン済み：設定（ホーム）画面へ遷移
+            document.getElementById("auth-screen").classList.add("hidden");
+            document.getElementById("user-info-bar").classList.remove("hidden");
+            document.getElementById("home-screen").classList.remove("hidden");
+            
+            // ユーザー名の表示
+            const displayName = user.isAnonymous ? "ゲストユーザー" : user.email;
+            document.getElementById("display-user-name").innerText = displayName;
+        } else {
+            // 未ログイン：認証画面へ遷移
+            document.getElementById("user-info-bar").classList.add("hidden");
+            document.getElementById("home-screen").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.add("hidden");
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("auth-screen").classList.remove("hidden");
+        }
+    });
+
+    // 認証モード切り替え
+    window.toggleAuthMode = () => {
+        isRegisterMode = !isRegisterMode;
+        const title = document.getElementById("auth-title");
+        const primaryBtn = document.getElementById("auth-primary-btn");
+        const switchLink = document.getElementById("auth-switch-link");
+        
+        if (isRegisterMode) {
+            title.innerText = "アカウント新規作成";
+            primaryBtn.innerText = "登録してログイン";
+            switchLink.innerText = "すでにアカウントをお持ちの方はこちら (ログイン)";
+        } else {
+            title.innerText = "ログイン";
+            primaryBtn.innerText = "ログイン";
+            switchLink.innerText = "新しくアカウントを作成する";
+        }
+    };
+
+    // メール/パスワードによる認証アクション
+    window.triggerAuthAction = async () => {
+        const email = document.getElementById("auth-email").value.trim();
+        const password = document.getElementById("auth-password").value.trim();
+
+        if (!email || !password) {
+            alert("メールアドレスとパスワードを入力してください。");
+            return;
+        }
+        if (password.length < 6) {
+            alert("パスワードは6文字以上で設定してください。");
+            return;
+        }
+
+        document.getElementById("loading-overlay").classList.remove("hidden");
+
+        try {
+            if (isRegisterMode) {
+                // 新規アカウント作成
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("アカウントの作成が成功し、ログインしました！");
+            } else {
+                // 通常ログイン
+                await signInWithEmailAndPassword(auth, email, password);
+            }
+        } catch (error) {
+            document.getElementById("loading-overlay").classList.add("hidden");
+            console.error("Auth error:", error);
+            let userFriendlyMsg = "エラーが発生しました。入力内容をお確かめください。";
+            if (error.code === "auth/email-already-in-use") {
+                userFriendlyMsg = "このメールアドレスはすでに使われています。";
+            } else if (error.code === "auth/wrong-password" || error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") {
+                userFriendlyMsg = "メールアドレスまたはパスワードが正しくありません。";
+            } else if (error.code === "auth/invalid-email") {
+                userFriendlyMsg = "メールアドレスの形式が正しくありません。";
+            }
+            alert(userFriendlyMsg);
+        }
+    };
+
+    // 匿名(ゲスト)ログイン
+    window.triggerGuestLogin = async () => {
+        document.getElementById("loading-overlay").classList.remove("hidden");
+        try {
+            await signInAnonymously(auth);
+        } catch (error) {
+            document.getElementById("loading-overlay").classList.add("hidden");
+            console.error("Guest login error:", error);
+            alert("ゲストログインに失敗しました。時間をおいてもう一度お試しください。");
+        }
+    };
+
+    // ログアウト
+    window.triggerLogout = async () => {
+        if (confirm("ログアウトしますか？")) {
+            document.getElementById("loading-overlay").classList.remove("hidden");
+            try {
+                await signOut(auth);
+                // 画面のリセット
+                currentIndex = 0;
+                score = 0;
+            } catch (error) {
+                document.getElementById("loading-overlay").classList.add("hidden");
+                console.error("Logout error:", error);
+                alert("ログアウトに失敗しました。");
+            }
+        }
+    };
 
     // 出題モードの設定
     window.setMode = (mode) => {
@@ -560,16 +809,12 @@
         ];
 
         let accumulatedDocs = [];
-        let finalColRef = null;
 
         try {
-            // 選択されたセクションごとに並行してFirestoreからデータを収集 (Promise.all)
-            // 複合クエリや巨大なINクエリを避けるため、セクションごとに個別にクエリを投げてフロントエンドでマージします
             const sectionList = Array.from(selectedSections);
-            
             showDebug(`選択セクションのフェッチを開始... [${sectionList.join(", ")}]`);
 
-            // 各コレクションパスを探索して、まずどちらのパスにデータがあるかを突き止めます
+            // どのコレクションパスにデータがあるか検証
             let targetColRef = null;
             for (const colRef of possibleCollections) {
                 try {
@@ -621,7 +866,7 @@
                 accumulatedDocs = accumulatedDocs.concat(docsList);
             });
 
-            // 取得できた中からシャッフルして指定問題数に制限
+            // シャッフルして制限
             accumulatedDocs.sort(() => Math.random() - 0.5);
             
             if (accumulatedDocs.length > count) {
@@ -631,8 +876,8 @@
             }
 
             if (quizDataList.length === 0) {
-                alert(`選択されたセクションに該当する単語データがFirestoreで見つかりませんでした。データ内の「section」フィールドの記述、またはセキュリティルールを確認してください。`);
-                location.reload();
+                alert(`選択されたセクションに該当する単語データがFirestoreで見つかりませんでした。`);
+                restartHome();
                 return;
             }
 
@@ -644,13 +889,13 @@
         } catch (e) {
             console.error("Error fetching data: ", e);
             document.getElementById("loading-overlay").classList.add("hidden");
-            document.getElementById("home-screen").classList.remove("hidden");
+            restartHome();
             
             let errMsg = e.message;
             if (e.message && e.message.includes("index")) {
-                errMsg = "Firestoreのインデックスが必要です。デベロッパーツールのリンクから生成してください。";
+                errMsg = "Firestoreのインデックスが必要です。";
             } else if (e.code === "permission-denied") {
-                errMsg = "Firestoreの読み取り権限がありません。セキュリティルールを再度ご確認ください。";
+                errMsg = "Firestoreの読み取り権限がありません。";
             }
             alert(errMsg);
         }
@@ -671,18 +916,16 @@
         let correctAnswerValue = "";
 
         if (quizMode === "en-ja") {
-            // 英和: 英語 → 和訳
             questionText = `英単語： ${currentQuiz.word}`;
             correctAnswerValue = currentQuiz.meaning;
         } else {
-            // 和英: 和訳 → 英語
             questionText = `意味： ${currentQuiz.meaning}`;
             correctAnswerValue = currentQuiz.word;
         }
 
         document.getElementById("question-meaning").innerText = questionText;
 
-        // ハズレの選択肢を作成（解決策A）
+        // ハズレの選択肢を作成
         let choices = [correctAnswerValue];
         const maxWords = 2442;
         let attempts = 0;
@@ -763,6 +1006,19 @@
         document.getElementById("result-screen").classList.remove("hidden");
         document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
     }
+
+    // 設定に戻る（クイズの終了処理）
+    window.restartHome = () => {
+        currentIndex = 0;
+        score = 0;
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.add("hidden");
+        if (currentUser) {
+            document.getElementById("home-screen").classList.remove("hidden");
+        } else {
+            document.getElementById("auth-screen").classList.remove("hidden");
+        }
+    };
 </script>
 
 </body>
