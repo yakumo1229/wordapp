@@ -369,6 +369,23 @@
             box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
         }
 
+        /* 制限時間バーのデザイン（サバイバルモード用） */
+        .timer-container {
+            width: 100%;
+            height: 8px;
+            background: #edf2f7;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: none;
+        }
+        .timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.05s linear, background-color 0.3s;
+        }
+
         /* ランキングボード */
         .ranking-container {
             margin-top: 20px;
@@ -559,11 +576,11 @@
             font-size: 0.85rem;
         }
 
-        /* エラー・デバッグ表示用スタイル */
-        .error-box {
-            background-color: #fff5f5;
-            border: 1px solid #feb2b2;
-            color: #c53030;
+        /* システムログ・エラー表示用コンソールのスタイル */
+        .console-box {
+            background-color: #f7fafc;
+            border: 1px solid #cbd5e0;
+            color: #4a5568;
             padding: 12px;
             border-radius: 8px;
             margin-top: 20px;
@@ -572,6 +589,12 @@
             word-break: break-all;
             max-height: 150px;
             overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .console-box.error-state {
+            background-color: #fff5f5;
+            border-color: #feb2b2;
+            color: #c53030;
         }
     </style>
 </head>
@@ -632,7 +655,7 @@
         <div class="toggle-container">
             <button type="button" class="toggle-btn active" id="target-all" onclick="setTargetType('all')">セクション別</button>
             <button type="button" class="toggle-btn" id="target-weak" onclick="setTargetType('weak')">苦手な単語</button>
-            <button type="button" class="toggle-btn" id="target-challenge" onclick="setTargetType('challenge')">全範囲チャレンジ</button>
+            <button type="button" class="toggle-btn" id="target-challenge" onclick="setTargetType('challenge')">全国サバイバル</button>
         </div>
 
         <div class="select-label">出題モード</div>
@@ -684,10 +707,12 @@
         
         <!-- チャレンジモードの案内（チャレンジモードのみで表示） -->
         <div id="challenge-info-area" class="hidden" style="background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 10px; text-align: left; font-size: 0.85rem; color: #b45309; margin-bottom: 15px;">
-            <strong>🏆 全範囲チャレンジルール:</strong>
+            <strong>🏆 全国サバイバルチャレンジルール:</strong>
             <ul style="margin: 5px 0 0 15px; padding: 0;">
-                <li>全2442単語からランダムに <strong>20問</strong> 出題されます。</li>
-                <li>終了時の正答数に基づいて、全国ランキングに登録可能です！</li>
+                <li>全2442単語からランダムに次々と出題されます。</li>
+                <li>回答時間は <strong>1問につき10秒</strong> です！</li>
+                <li><strong>1問でも間違えるか、時間切れになると即ゲームオーバー！</strong></li>
+                <li>連続正答数に基づいて、全国ランキングを競い合います。</li>
             </ul>
         </div>
         
@@ -696,7 +721,7 @@
         <!-- 全国ランキングボード（ホーム画面に常時表示） -->
         <div class="ranking-container">
             <div class="ranking-title">
-                🏆 全範囲チャレンジランキング
+                🏆 全国サバイバルランキング
                 <span onclick="loadRankingData()">🔄更新</span>
             </div>
             <ul class="ranking-list" id="ranking-list-area">
@@ -704,10 +729,10 @@
             </ul>
         </div>
 
-        <!-- 開発時用：エラーログ確認エリア -->
-        <div id="debug-area" class="error-box hidden">
-            <strong>【デバッグエラー情報】</strong>
-            <div id="debug-message"></div>
+        <!-- システムログ・エラー確認コンソール -->
+        <div id="debug-area" class="console-box hidden">
+            <strong id="console-header-title">⚙️ システムログ</strong>
+            <div id="debug-message" style="margin-top: 5px;"></div>
         </div>
     </div>
 
@@ -719,6 +744,11 @@
 
     <!-- 2. クイズ画面 -->
     <div id="quiz-screen" class="hidden">
+        <!-- 10秒カウントダウン用プログレスバー（チャレンジモードでのみ表示される） -->
+        <div class="timer-container" id="quiz-timer-container">
+            <div class="timer-bar" id="quiz-timer-bar"></div>
+        </div>
+
         <div id="progress">1 / 10</div>
         <div id="question-meaning">
             <div id="question-text">読み込み中...</div>
@@ -743,7 +773,7 @@
         <div class="modal-title" id="modal-title-text">確認</div>
         <div class="modal-msg" id="modal-msg-text">メッセージ</div>
         
-        <!-- 名前入力用フォーム（非表示・必要時に表示） -->
+        <!-- 名前入力用フォーム -->
         <input type="text" id="modal-input-field" class="modal-input-field hidden" placeholder="ニックネームを入力してください" maxlength="15">
         
         <div class="modal-buttons">
@@ -805,7 +835,7 @@
         }
     }
 
-    // --- カスタムモーダルシステム（ブラウザ標準alert/confirm/promptの完全代替） ---
+    // --- カスタムモーダルシステム ---
     let modalResolve = null;
     function showModal(title, msg, options = {}) {
         const showCancel = options.showCancel || false;
@@ -861,6 +891,12 @@
     let isRegisterMode = false; // ログインフォーム or 新規登録フォームのトグル状態
     let currentUser = null;
     let userProgressMap = new Map(); // ユーザーの学習進捗データ
+
+    // チャレンジモード（サバイバル）用の特殊制御変数
+    let challengeQueue = []; // 先読み単語プール
+    let usedWordIds = new Set(); // 既出単語ID
+    let timerInterval = null; // カウントダウン制御用
+    const maxTime = 10; // 制限時間（10秒）
 
     // UI初期構築
     const maxSection = 68;
@@ -971,7 +1007,7 @@
             document.getElementById("stat-review").innerText = reviewCount;
         } catch (e) {
             console.error("Failed to load user progress:", e);
-            showDebug("進捗データの取得エラー: " + e.message);
+            showDebug("進捗データの取得エラー: " + e.message, true);
         }
     }
 
@@ -1017,7 +1053,7 @@
                         <span class="rank-badge">${index + 1}</span>
                         <span class="rank-name">${escapeHTML(item.username || "名無し")}</span>
                     </div>
-                    <span class="rank-score">${item.score} / 20問</span>
+                    <span class="rank-score">${item.score} 問連続正解</span>
                 `;
                 rankListArea.appendChild(li);
             });
@@ -1144,7 +1180,7 @@
             challengeInfoArea.classList.add("hidden");
         } else if (type === 'challenge') {
             sectionSelectionArea.classList.add("hidden");
-            questionCountArea.classList.add("hidden"); // チャレンジは20問固定
+            questionCountArea.classList.add("hidden"); // チャレンジはサバイバルエンドレス
             challengeInfoArea.classList.remove("hidden");
         }
     };
@@ -1209,12 +1245,140 @@
         document.getElementById("selected-count").innerText = `選択中: ${selectedSections.size} セクション`;
     }
 
-    // デバッグメッセージ表示
-    function showDebug(msg) {
+    // デバッグメッセージを表示する関数
+    function showDebug(msg, isError = false) {
         const debugArea = document.getElementById("debug-area");
         const debugMsg = document.getElementById("debug-message");
+        const consoleHeader = document.getElementById("console-header-title");
+        
         debugArea.classList.remove("hidden");
+        
+        if (isError) {
+            debugArea.classList.add("error-state");
+            consoleHeader.innerText = "⚠️ システムエラー発生";
+        } else {
+            debugArea.classList.remove("error-state");
+            consoleHeader.innerText = "⚙️ システムログ";
+        }
+        
         debugMsg.innerHTML += `<div>${msg}</div>`;
+        debugArea.scrollTop = debugArea.scrollHeight; 
+    }
+
+    // --- チャレンジ（サバイバル）モード：先読みキューの補充処理 ---
+    async function fetchRandomWordToQueue() {
+        const maxWords = 2442;
+        let attempts = 0;
+        const targetCol = currentCollectionRef || collection(db, "vocabulary");
+
+        while (attempts < 20) {
+            attempts++;
+            const randomNum = Math.floor(Math.random() * maxWords) + 1;
+            const randomId = "word_" + String(randomNum).padStart(4, '0');
+            
+            // 既出でなければ取得を試みる
+            if (!usedWordIds.has(randomId)) {
+                try {
+                    const rSnap = await getDoc(doc(targetCol, randomId));
+                    if (rSnap.exists()) {
+                        const data = rSnap.data();
+                        challengeQueue.push({ id: rSnap.id, ...data });
+                        usedWordIds.add(randomId);
+                        return; // フェッチ成功
+                    }
+                } catch (e) {
+                    console.warn(`キュー補充失敗 ${randomId}:`, e);
+                }
+            }
+        }
+        
+        // フォールバック（ネットワークエラー保護）
+        const fallbacks = [
+            { word: "understand", meaning: "〜を理解する", section: "1" },
+            { word: "express", meaning: "〜を表現する", section: "1" },
+            { word: "develop", meaning: "〜を発達させる", section: "2" },
+            { word: "provide", meaning: "〜を供給する", section: "2" },
+            { word: "improve", meaning: "〜を向上させる", section: "3" },
+            { word: "create", meaning: "〜を創造する", section: "3" }
+        ];
+        const selected = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        challengeQueue.push({
+            id: "fallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            ...selected
+        });
+    }
+
+    // --- タイマー制御システム（1問10秒制限） ---
+    function startTimer() {
+        stopTimer();
+        if (targetType !== "challenge") {
+            document.getElementById("quiz-timer-container").style.display = "none";
+            return;
+        }
+
+        const container = document.getElementById("quiz-timer-container");
+        const bar = document.getElementById("quiz-timer-bar");
+        
+        container.style.display = "block";
+        bar.style.width = "100%";
+        bar.style.backgroundColor = "var(--primary)";
+
+        const tickRate = 50; // 50msごとにバー幅を更新して滑らかに見せる
+        const totalTicks = (maxTime * 1000) / tickRate;
+        let currentTick = 0;
+
+        timerInterval = setInterval(() => {
+            currentTick++;
+            const percent = 100 - (currentTick / totalTicks) * 100;
+            bar.style.width = `${percent}%`;
+
+            // 残り時間に応じたカラーグラデーション演出
+            if (percent < 30) {
+                bar.style.backgroundColor = "var(--error)"; // 残り3秒未満で赤色
+            } else if (percent < 60) {
+                bar.style.backgroundColor = "var(--gold)";  // 残り6秒未満で黄色
+            }
+
+            if (currentTick >= totalTicks) {
+                handleTimeUp();
+            }
+        }, tickRate);
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    // 時間切れ時のゲームオーバー処理
+    async function handleTimeUp() {
+        stopTimer();
+        playTone(150, 'sawtooth', 0.4);
+        document.getElementById("app").classList.add("shake");
+        setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
+
+        // 全ての回答ボタンを無効化
+        const buttons = document.querySelectorAll("#choices-area button");
+        buttons.forEach(b => b.disabled = true);
+
+        // 正解の単語をハイライト表示
+        const currentQuiz = quizDataList[currentIndex];
+        const correctAnswer = quizMode === "en-ja" ? currentQuiz.meaning : currentQuiz.word;
+        buttons.forEach(b => {
+            if (b.innerText === correctAnswer) {
+                b.classList.add("correct");
+            }
+        });
+
+        // タイムアップの旨をログ出力
+        showDebug(`タイムアップ！10秒が経過しました。ゲームオーバーです。`, false);
+
+        // 1.2秒後に結果画面に遷移
+        setTimeout(() => {
+            showResult();
+        }, 1200);
     }
 
     // クイズ開始
@@ -1226,8 +1390,8 @@
             return;
         }
 
-        // チャレンジモードは一律20問固定、それ以外はセレクトボックスから取得
-        const count = targetType === "challenge" ? 20 : parseInt(document.getElementById("count-select").value);
+        // 通常モード用問題数
+        const count = parseInt(document.getElementById("count-select").value);
 
         // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
@@ -1264,32 +1428,20 @@
             currentCollectionRef = targetColRef;
 
             if (targetType === "challenge") {
-                // 【全範囲チャレンジのデータロード】
-                // 全2442単語から、クライアント側で完全にランダムな番号を20個抽出し、非同期並行フェッチ
-                const randomIds = [];
-                const maxWords = 2442;
-                while (randomIds.length < 20) {
-                    const rNum = Math.floor(Math.random() * maxWords) + 1;
-                    const rId = "word_" + String(rNum).padStart(4, '0');
-                    if (!randomIds.includes(rId)) {
-                        randomIds.push(rId);
-                    }
+                // 【全国サバイバル（エンドレス）の初期化】
+                showDebug("全国サバイバル用の先読みロード中...", false);
+                challengeQueue = [];
+                usedWordIds.clear();
+                
+                // 最初に裏で4問同時にロードして先読みプールを埋める
+                const initPromises = [];
+                for (let i = 0; i < 4; i++) {
+                    initPromises.push(fetchRandomWordToQueue());
                 }
-
-                showDebug(`チャレンジ用全範囲フェッチ開始: [${randomIds.join(", ")}]`);
-
-                const challengeFetchPromises = randomIds.map(async (docId) => {
-                    const wordDocRef = doc(targetColRef, docId);
-                    const snap = await getDoc(wordDocRef);
-                    if (snap.exists()) {
-                        return { id: snap.id, ...snap.data() };
-                    }
-                    return null;
-                });
-
-                const rawResults = await Promise.all(challengeFetchPromises);
-                accumulatedDocs = rawResults.filter(docData => docData !== null);
-
+                await Promise.all(initPromises);
+                
+                // 初期問題リストとしてキューを展開
+                quizDataList = [...challengeQueue];
             } else if (targetType === "weak") {
                 // 苦手な単語のみ
                 const weakWordList = [];
@@ -1312,6 +1464,8 @@
                 }
 
                 accumulatedDocs = weakWordList;
+                accumulatedDocs.sort(() => Math.random() - 0.5);
+                quizDataList = accumulatedDocs.slice(0, count);
             } else {
                 // 通常のセクション別単語取得
                 const sectionList = Array.from(selectedSections);
@@ -1339,15 +1493,9 @@
                 results.forEach(docsList => {
                     accumulatedDocs = accumulatedDocs.concat(docsList);
                 });
-            }
-
-            // シャッフルして制限
-            accumulatedDocs.sort(() => Math.random() - 0.5);
-            
-            if (accumulatedDocs.length > count) {
+                
+                accumulatedDocs.sort(() => Math.random() - 0.5);
                 quizDataList = accumulatedDocs.slice(0, count);
-            } else {
-                quizDataList = accumulatedDocs;
             }
 
             if (quizDataList.length === 0) {
@@ -1365,6 +1513,7 @@
             console.error("Error preparing quiz: ", e);
             document.getElementById("loading-overlay").classList.add("hidden");
             restartHome();
+            showDebug(`クイズ準備中にエラーが発生しました: ${e.message}`, true);
             await showModal("エラー", e.message || "通信エラーが発生しました。");
         }
     };
@@ -1423,10 +1572,10 @@
                 previousUsername = rData.username || "";
             }
 
-            // 今回のスコアが自己ベストを更新した場合のみ登録（初挑戦も含む）
+            // 今回の連続正解スコアが自己ベストを更新した場合のみ登録（初挑戦も含む）
             if (score > previousHighScore) {
                 // ニックネーム入力ダイアログ
-                const nickname = await showModal("🏆 ハイスコア更新！", "全国ランキングに登録するニックネームを入力してください：", {
+                const nickname = await showModal("🏆 ハイスコア更新！", `自己新記録 ${score}問連続正解を達成！全国ランキングに登録するニックネームを入力してください：`, {
                     showInput: true,
                     placeholder: "ニックネーム (15文字以内)",
                     defaultValue: previousUsername || (currentUser.isAnonymous ? "ゲスト" : currentUser.email.split("@")[0])
@@ -1457,13 +1606,30 @@
 
     // 問題表示
     async function showNextQuestion() {
-        if (currentIndex >= quizDataList.length) {
+        // サバイバル（チャレンジ）モードの終了判定は不正解時に行うため、ここではインデックス超過チェックは通常モードでのみ適用
+        if (targetType !== "challenge" && currentIndex >= quizDataList.length) {
             showResult();
             return;
         }
 
-        const currentQuiz = quizDataList[currentIndex];
-        document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
+        let currentQuiz = null;
+
+        if (targetType === "challenge") {
+            // キューから1問取り出し、即座に次の問題を非同期で1問補充
+            currentQuiz = challengeQueue.shift();
+            
+            // 最新の問題をquizDataListに格納して同期
+            quizDataList[currentIndex] = currentQuiz;
+            
+            // バックグラウンドで次の問題を1問補充 (ロード遅延なしのエンドレス進行)
+            fetchRandomWordToQueue();
+            
+            // 進捗表示を「現在の連続正答数」に変更
+            document.getElementById("progress").innerText = `連続正答数: ${currentIndex} 問`;
+        } else {
+            currentQuiz = quizDataList[currentIndex];
+            document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
+        }
 
         // 出題モードによって問題と「正解値」を切り替える
         let questionText = "";
@@ -1531,10 +1697,15 @@
             btn.onclick = () => checkAnswer(btn, c === correctAnswerValue);
             area.appendChild(btn);
         });
+
+        // 10秒タイマースタート
+        startTimer();
     }
 
     // 正誤判定
     async function checkAnswer(btn, isCorrect) {
+        stopTimer(); // 回答した時点でタイマーを停止
+
         const buttons = document.querySelectorAll("#choices-area button");
         buttons.forEach(b => b.disabled = true);
 
@@ -1550,33 +1721,55 @@
             document.getElementById("app").classList.add("shake");
             playTone(150, 'sawtooth', 0.4);
             setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
+
+            // 間違えた場合は、正解の単語もハイライト
+            const correctAnswer = quizMode === "en-ja" ? currentQuiz.meaning : currentQuiz.word;
+            buttons.forEach(b => {
+                if (b.innerText === correctAnswer) {
+                    b.classList.add("correct");
+                }
+            });
         }
 
-        // Firestoreに進捗を保存（バックグラウンドで実行、UXに遅延を与えない）
+        // Firestoreに進捗を保存
         if (currentQuiz && currentQuiz.id) {
             updateWordProgress(currentQuiz.id, isCorrect, currentQuiz);
         }
 
+        // 1.2秒後に次へ遷移（またはゲームオーバー処理）
         setTimeout(() => {
-            currentIndex++;
-            showNextQuestion();
+            if (targetType === "challenge") {
+                if (isCorrect) {
+                    currentIndex++;
+                    showNextQuestion();
+                } else {
+                    // 間違えたら即サバイバル終了
+                    showResult();
+                }
+            } else {
+                currentIndex++;
+                showNextQuestion();
+            }
         }, 1200);
     }
 
     // 結果表示
     async function showResult() {
+        stopTimer();
         document.getElementById("quiz-screen").classList.add("hidden");
         document.getElementById("result-screen").classList.remove("hidden");
-        document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
-
-        // チャレンジモードの場合は、自動的にランキング処理を走らせる
+        
         if (targetType === "challenge") {
+            document.getElementById("final-score").innerText = `サバイバル終了！\n連続正答数: ${score} 問！`;
             await checkAndRegisterRanking();
+        } else {
+            document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
         }
     }
 
     // 設定（ホーム）に戻る
     window.restartHome = async () => {
+        stopTimer();
         currentIndex = 0;
         score = 0;
         document.getElementById("quiz-screen").classList.add("hidden");
@@ -1585,9 +1778,7 @@
         if (currentUser) {
             document.getElementById("loading-overlay").classList.remove("hidden");
             document.getElementById("loading-text").innerText = "最新データを同期中...";
-            // 最新の統計をロード
             await loadUserProgressData(currentUser.uid);
-            // 最新のランキングをロード
             await loadRankingData();
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("home-screen").classList.remove("hidden");
