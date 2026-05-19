@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>単語クイズ - word-app-sokutan</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --error: #f44336;
+            --bg: #f5f7fa;
+            --text: #333;
+        }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            background: white; 
+            width: 90%; 
+            max-width: 400px; 
+            padding: 2rem; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+        .hidden { display: none !important; }
+        
+        /* ボタンのデザイン */
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border: 2px solid #eee; 
+            border-radius: 10px; 
+            background: white; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-size: 1rem; 
+            font-weight: 500;
+        }
+        button:hover:not(:disabled) { background: #f8f9fa; border-color: #ccc; }
+        button:disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        .start-btn { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            font-weight: bold; 
+            margin-top: 20px; 
+            font-size: 1.1rem;
+        }
+        .start-btn:hover { background: #43a047; }
+        
+        /* クイズ演出用 */
+        .correct { background-color: #c8e6c9 !important; border-color: var(--primary) !important; color: #2e7d32; }
+        .wrong { background-color: #ffcdd2 !important; border-color: var(--error) !important; color: #c62828; }
+        
+        .shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            font-size: 1rem;
+            background-color: #fff;
+        }
+        #progress { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        #question-meaning { margin: 20px 0; min-height: 3em; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="home-screen">
+        <h1>単語学習クイズ</h1>
+        <p>セクションを選択</p>
+        <select id="section-select">
+            <option value="1">Section 1</option>
+            <option value="2">Section 2</option>
+            <option value="3">Section 3</option>
+            <option value="4">Section 4</option>
+            <option value="5">Section 5</option>
+        </select>
+        
+        <p>問題数</p>
+        <select id="count-select">
+            <option value="5">5問</option>
+            <option value="10" selected>10問</option>
+            <option value="20">20問</option>
+        </select>
+        
+        <button class="start-btn" onclick="startQuiz()">学習開始！</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div id="progress">1 / 10</div>
+        <h2 id="question-meaning">読み込み中...</h2>
+        <div id="choices-area">
+            </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2>結果発表</h2>
+        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
+        <button class="start-btn" onclick="location.reload()">もう一度解く</button>
+    </div>
+</div>
+
+<script type="module">
+    // Firebase SDKの読み込み
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // --- 【重要】ご自身のFirebase設定をここに貼り付けてください ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "word-app-sokutan.firebaseapp.com",
+        projectId: "word-app-sokutan",
+        storageBucket: "word-app-sokutan.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // AudioContextの初期化（ビープ音用）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, duration) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    let quizDataList = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    // クイズ開始
+    window.startQuiz = async () => {
+        const section = parseInt(document.getElementById("section-select").value);
+        const count = parseInt(document.getElementById("count-select").value);
+
+        document.getElementById("home-screen").classList.add("hidden");
+        document.getElementById("quiz-screen").classList.remove("hidden");
+
+        try {
+            const q = query(collection(db, "vocabulary"), where("section", "==", section), limit(count));
+            const snap = await getDocs(q);
+            quizDataList = snap.docs.map(doc => doc.data()).sort(() => Math.random() - 0.5);
+            
+            if (quizDataList.length === 0) {
+                alert("指定されたセクションにデータが見つかりませんでした。");
+                location.reload();
+                return;
+            }
+            showNextQuestion();
+        } catch (e) {
+            console.error("Error fetching data: ", e);
+            alert("データの取得に失敗しました。Firestoreの権限を確認してください。");
+        }
+    };
+
+    // 問題表示
+    async function showNextQuestion() {
+        if (currentIndex >= quizDataList.length) {
+            showResult();
+            return;
+        }
+
+        const currentQuiz = quizDataList[currentIndex];
+        document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
+        document.getElementById("question-meaning").innerText = currentQuiz.meaning;
+
+        // ハズレの選択肢を作成（解決策A）
+        let choices = [currentQuiz.word];
+        while (choices.length < 4) {
+            const randomNum = Math.floor(Math.random() * 2442) + 1;
+            const randomId = "word_" + String(randomNum).padStart(4, '0');
+            const rSnap = await getDoc(doc(db, "vocabulary", randomId));
+            
+            if (rSnap.exists()) {
+                const w = rSnap.data().word;
+                if (!choices.includes(w)) choices.push(w);
+            }
+        }
+        
+        choices.sort(() => Math.random() - 0.5);
+        const area = document.getElementById("choices-area");
+        area.innerHTML = "";
+        
+        choices.forEach(c => {
+            const btn = document.createElement("button");
+            btn.innerText = c;
+            btn.onclick = () => checkAnswer(btn, c === currentQuiz.word);
+            area.appendChild(btn);
+        });
+    }
+
+    // 正誤判定
+    function checkAnswer(btn, isCorrect) {
+        const buttons = document.querySelectorAll("#choices-area button");
+        buttons.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            score++;
+            btn.classList.add("correct");
+            playTone(880, 'sine', 0.5);
+        } else {
+            btn.classList.add("wrong");
+            document.getElementById("app").classList.add("shake");
+            playTone(150, 'square', 0.5);
+            setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
+        }
+
+        setTimeout(() => {
+            currentIndex++;
+            showNextQuestion();
+        }, 1000);
+    }
+
+    // 結果表示
+    function showResult() {
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+        document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
+    }
+</script>
+
+</body>
+</html>
