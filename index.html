@@ -174,6 +174,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* エラー・デバッグ表示用スタイル */
+        .error-box {
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 0.85rem;
+            word-break: break-all;
+            max-height: 150px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -186,7 +201,6 @@
         
         <div class="select-label">セクションを選択</div>
         <select id="section-select">
-            <!-- セクション1〜50まで動的にHTML側でカバー可能にする（よくあるセクション数に合わせるため多めに用意） -->
             <option value="1">Section 1</option>
             <option value="2">Section 2</option>
             <option value="3">Section 3</option>
@@ -208,6 +222,12 @@
         </select>
         
         <button class="start-btn" onclick="startQuiz()">学習開始！</button>
+
+        <!-- 開発時用：エラーログ確認エリア -->
+        <div id="debug-area" class="error-box hidden">
+            <strong>【デバッグエラー情報】</strong>
+            <div id="debug-message"></div>
+        </div>
     </div>
 
     <!-- ローディング表示 -->
@@ -238,7 +258,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // --- Firebaseの設定（apiKeyの重複クォーテーションを修正しました） ---
+    // --- Firebaseの設定 ---
     const firebaseConfig = {
         apiKey: "AIzaSyD3kROMBvsbOScqTomHWzQrgibk1SGyRrk",
         authDomain: "word-app-sokutan.firebaseapp.com",
@@ -251,7 +271,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // AudioContextの初期化（ブラウザ制限回避のため関数内で初期化）
+    // AudioContextの初期化
     let audioCtx = null;
     function initAudio() {
         if (!audioCtx) {
@@ -269,7 +289,7 @@
             const gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // 音量を少しマイルドに調整
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -284,9 +304,17 @@
     let currentIndex = 0;
     let score = 0;
 
+    // デバッグメッセージを表示する関数
+    function showDebug(msg) {
+        const debugArea = document.getElementById("debug-area");
+        const debugMsg = document.getElementById("debug-message");
+        debugArea.classList.remove("hidden");
+        debugMsg.innerHTML += `<div>${msg}</div>`;
+    }
+
     // クイズ開始
     window.startQuiz = async () => {
-        initAudio(); // ユーザーのアクションにトリガーして音声を有効化
+        initAudio(); 
         
         const sectionVal = document.getElementById("section-select").value;
         const count = parseInt(document.getElementById("count-select").value);
@@ -295,31 +323,70 @@
         document.getElementById("home-screen").classList.add("hidden");
         document.getElementById("loading-overlay").classList.remove("hidden");
 
-        try {
-            // 【対策1: 型の不一致回避】
-            // Firestoreに格納されている section が「数値型」か「文字列型」か不明なため、両方の可能性に対応します。
-            const sectionNum = parseInt(sectionVal);
-            const sectionStr = String(sectionVal);
+        const sectionNum = parseInt(sectionVal);
+        const sectionStr = String(sectionVal);
+        const zeroPaddedSection = String(sectionNum).padStart(2, '0');
 
-            let snap = null;
-            
-            // 1. まずは数値として検索を試みる
-            const qNum = query(collection(db, "vocabulary"), where("section", "==", sectionNum), limit(150));
-            snap = await getDocs(qNum);
-            
-            // 2. 数値で見つからなかった場合、文字列として検索を試みる
-            if (snap.empty) {
-                console.log(`Section ${sectionNum} (Number) returned no docs. Trying as String...`);
-                const qStr = query(collection(db, "vocabulary"), where("section", "==", sectionStr), limit(150));
-                snap = await getDocs(qStr);
+        // 調査対象のFirestoreパスのパターン（自動切り替え用）
+        // ルートの "vocabulary" と ネストされた "/artifacts/word-app-sokutan/public/data/vocabulary"
+        const possibleCollections = [
+            collection(db, "vocabulary"),
+            collection(db, "artifacts", "word-app-sokutan", "public", "data", "vocabulary")
+        ];
+
+        let snap = null;
+        let finalCollectionRef = null;
+
+        try {
+            // パターン1: ルートまたは指定コレクションを網羅的に探す
+            for (const colRef of possibleCollections) {
+                showDebug(`データベース探索中: ${colRef.path}...`);
+                
+                // 1-A. 数値としてクエリをかける
+                const qNum = query(colRef, where("section", "==", sectionNum), limit(150));
+                snap = await getDocs(qNum);
+                
+                // 1-B. 空なら文字列としてクエリをかける
+                if (snap.empty) {
+                    const qStr = query(colRef, where("section", "==", sectionStr), limit(150));
+                    snap = await getDocs(qStr);
+                }
+
+                // 1-C. それでも空ならゼロパディング "01" で試す
+                if (snap.empty) {
+                    const qPad = query(colRef, where("section", "==", zeroPaddedSection), limit(150));
+                    snap = await getDocs(qPad);
+                }
+
+                // データが見つかれば探索を終了する
+                if (!snap.empty) {
+                    finalCollectionRef = colRef;
+                    showDebug(`データの取得に成功しました！(パス: ${colRef.path})`);
+                    break;
+                }
             }
 
-            // 3. それでも見つからない場合、文字列にゼロパディング（例: "01"）を試みる
-            if (snap.empty) {
-                const zeroPaddedSection = String(sectionNum).padStart(2, '0');
-                console.log(`Trying zero-padded section string: "${zeroPaddedSection}"...`);
-                const qPad = query(collection(db, "vocabulary"), where("section", "==", zeroPaddedSection), limit(150));
-                snap = await getDocs(qPad);
+            // それでも全く見つからない場合は、コレクション全体の状況（そもそも読み取り自体ができるか）をテスト
+            if (!snap || snap.empty) {
+                showDebug(`全探索パターンで指定のセクションデータが見つかりませんでした。セキュリティルールまたはセクションの表記が合致していません。`);
+                
+                // コレクション内の先頭ドキュメントを1件テストフェッチ（接続・ルール・パス自体が生きているかのテスト）
+                for (const colRef of possibleCollections) {
+                    try {
+                        const testQ = query(colRef, limit(1));
+                        const testSnap = await getDocs(testQ);
+                        if (!testSnap.empty) {
+                            const sample = testSnap.docs[0].data();
+                            showDebug(`[テスト疎通成功] パス ${colRef.path} にデータは存在します。例: word=${sample.word}, section=${sample.section} (型の確認: ${typeof sample.section})`);
+                        } else {
+                            showDebug(`[テスト疎通] パス ${colRef.path} は空っぽ、またはドキュメントが存在しません。`);
+                        }
+                    } catch (testErr) {
+                        showDebug(`[テスト疎通失敗] パス ${colRef.path} へのアクセス権がありません: ${testErr.message}`);
+                    }
+                }
+                
+                throw new Error("NoVocabularyDataFound");
             }
 
             // 取得したドキュメントを配列に変換
@@ -336,35 +403,32 @@
             if (quizDataList.length > count) {
                 quizDataList = quizDataList.slice(0, count);
             }
-            
-            // チェック: 万が一全く存在しなかった場合
-            if (quizDataList.length === 0) {
-                alert(`セクション ${sectionVal} に該当する単語データがFirestoreで見つかりませんでした。データ内の「section」フィールドの記述、またはセキュリティルールを確認してください。`);
-                location.reload();
-                return;
-            }
 
             // クイズ画面へ移行
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("quiz-screen").classList.remove("hidden");
             
-            showNextQuestion();
+            showNextQuestion(finalCollectionRef);
         } catch (e) {
             console.error("Error fetching data: ", e);
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("home-screen").classList.remove("hidden");
             
-            // 【対策3: インデックスエラーの場合、わかりやすい指示を出す】
+            let errMsg = e.message;
             if (e.message && e.message.includes("index")) {
-                alert("Firestoreのインデックスが必要です。ブラウザのF12（デベロッパーツール）を開き、コンソールに表示されている「Create Index」のリンクをクリックしてインデックスを生成してください。");
-            } else {
-                alert("データの取得に失敗しました。Firestoreの「セキュリティルール」が期限切れになっていないか確認してください。");
+                errMsg = "Firestoreの「インデックス(索引)」が必要です。コンソールに表示されているリンクをクリックして追加してください。";
+            } else if (e.code === "permission-denied") {
+                errMsg = "Firestoreの読み取り権限（セキュリティルール）で拒否されました。ルールの期限や、公開設定を見直してください。";
+            } else if (e.message === "NoVocabularyDataFound") {
+                errMsg = `セクション ${sectionVal} に該当するデータが取得できません。上のデバッグ情報をご確認ください。`;
             }
+            
+            alert(errMsg);
         }
     };
 
     // 問題表示
-    async function showNextQuestion() {
+    async function showNextQuestion(collectionRef) {
         if (currentIndex >= quizDataList.length) {
             showResult();
             return;
@@ -378,18 +442,19 @@
         let choices = [currentQuiz.word];
         const maxWords = 2442;
         
-        // タイムアウト保護（無限ループ防止）
         let attempts = 0;
+        // ハズレ作成時も、クイズ取得で使用した正確なコレクション参照(collectionRef)を使う
+        const targetCol = collectionRef || collection(db, "vocabulary");
+
         while (choices.length < 4 && attempts < 20) {
             attempts++;
             const randomNum = Math.floor(Math.random() * maxWords) + 1;
             const randomId = "word_" + String(randomNum).padStart(4, '0');
             
             try {
-                const rSnap = await getDoc(doc(db, "vocabulary", randomId));
+                const rSnap = await getDoc(doc(targetCol, randomId));
                 if (rSnap.exists()) {
                     const w = rSnap.data().word;
-                    // 正解と同じ、またはすでに選択肢にある単語は排除
                     if (w && !choices.includes(w)) {
                         choices.push(w);
                     }
@@ -399,7 +464,7 @@
             }
         }
 
-        // 万が一ハズレが足りない場合のフォールバック（緊急時）
+        // 緊急時フォールバック
         const fallbacks = ["understand", "express", "develop", "provide", "improve", "create"];
         let fIndex = 0;
         while (choices.length < 4) {
@@ -430,11 +495,11 @@
         if (isCorrect) {
             score++;
             btn.classList.add("correct");
-            playTone(880, 'sine', 0.4); // 高い澄んだ音
+            playTone(880, 'sine', 0.4);
         } else {
             btn.classList.add("wrong");
             document.getElementById("app").classList.add("shake");
-            playTone(150, 'sawtooth', 0.4); // 不正解ブザーに近いノコギリ波
+            playTone(150, 'sawtooth', 0.4);
             setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
         }
 
