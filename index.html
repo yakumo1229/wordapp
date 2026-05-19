@@ -7,9 +7,11 @@
     <style>
         :root {
             --primary: #4CAF50;
+            --primary-hover: #43a047;
             --error: #f44336;
             --bg: #f5f7fa;
             --text: #333;
+            --card-bg: #ffffff;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -20,102 +22,213 @@
             align-items: center; 
             min-height: 100vh; 
             margin: 0; 
+            padding: 10px;
+            box-sizing: border-box;
         }
         .container { 
-            background: white; 
-            width: 90%; 
-            max-width: 400px; 
+            background: var(--card-bg); 
+            width: 100%; 
+            max-width: 420px; 
             padding: 2rem; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
             text-align: center; 
+            box-sizing: border-box;
         }
         .hidden { display: none !important; }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        
+        /* セクション・問題数設定ラベル */
+        .select-label {
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin: 15px 0 5px 2px;
+            color: #34495e;
+        }
+
+        /* セレクトボックス */
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border-radius: 8px; 
+            border: 2px solid #e2e8f0; 
+            font-size: 1rem;
+            background-color: #fff;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        select:focus {
+            border-color: var(--primary);
+        }
         
         /* ボタンのデザイン */
         button { 
             width: 100%; 
             padding: 14px; 
             margin: 8px 0; 
-            border: 2px solid #eee; 
+            border: 2px solid #edf2f7; 
             border-radius: 10px; 
             background: white; 
             cursor: pointer; 
-            transition: all 0.2s; 
+            transition: all 0.2s ease; 
             font-size: 1rem; 
-            font-weight: 500;
+            font-weight: 600;
+            color: #4a5568;
+            box-sizing: border-box;
         }
-        button:hover:not(:disabled) { background: #f8f9fa; border-color: #ccc; }
-        button:disabled { cursor: not-allowed; opacity: 0.8; }
+        button:hover:not(:disabled) { 
+            background: #f7fafc; 
+            border-color: #cbd5e0; 
+            transform: translateY(-1px);
+        }
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+        button:disabled { 
+            cursor: not-allowed; 
+            opacity: 0.8; 
+        }
         
         .start-btn { 
             background: var(--primary); 
             color: white; 
             border: none; 
             font-weight: bold; 
-            margin-top: 20px; 
+            margin-top: 25px; 
             font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.15);
         }
-        .start-btn:hover { background: #43a047; }
+        .start-btn:hover { 
+            background: var(--primary-hover); 
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
+        }
         
         /* クイズ演出用 */
-        .correct { background-color: #c8e6c9 !important; border-color: var(--primary) !important; color: #2e7d32; }
-        .wrong { background-color: #ffcdd2 !important; border-color: var(--error) !important; color: #c62828; }
+        .correct { 
+            background-color: #e6fffa !important; 
+            border-color: var(--primary) !important; 
+            color: #234e52 !important; 
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+        }
+        .wrong { 
+            background-color: #fff5f5 !important; 
+            border-color: var(--error) !important; 
+            color: #742a2a !important; 
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.2);
+        }
         
-        .shake { animation: shake 0.4s; }
+        .shake { animation: shake 0.4s ease-in-out; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
         }
         
-        select { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border-radius: 8px; 
-            border: 1px solid #ddd; 
-            font-size: 1rem;
-            background-color: #fff;
+        #progress { 
+            font-size: 0.95rem; 
+            color: #718096; 
+            margin-bottom: 15px; 
+            font-weight: bold;
         }
-        #progress { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
-        #question-meaning { margin: 20px 0; min-height: 3em; display: flex; align-items: center; justify-content: center; }
+        #question-meaning { 
+            margin: 25px 0; 
+            min-height: 4em; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.4rem;
+            line-height: 1.4;
+            color: #2d3748;
+            border-bottom: 2px dashed #edf2f7;
+            padding-bottom: 20px;
+        }
+
+        #loading-overlay {
+            color: #4a5568;
+            font-weight: 500;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container" id="app">
+    <!-- 1. 設定画面 -->
     <div id="home-screen">
         <h1>単語学習クイズ</h1>
-        <p>セクションを選択</p>
+        <p class="subtitle">word-app-sokutan</p>
+        
+        <div class="select-label">セクションを選択</div>
         <select id="section-select">
+            <!-- セクション1〜50まで動的にHTML側でカバー可能にする（よくあるセクション数に合わせるため多めに用意） -->
             <option value="1">Section 1</option>
             <option value="2">Section 2</option>
             <option value="3">Section 3</option>
             <option value="4">Section 4</option>
             <option value="5">Section 5</option>
+            <option value="6">Section 6</option>
+            <option value="7">Section 7</option>
+            <option value="8">Section 8</option>
+            <option value="9">Section 9</option>
+            <option value="10">Section 10</option>
         </select>
         
-        <p>問題数</p>
+        <div class="select-label">問題数</div>
         <select id="count-select">
             <option value="5">5問</option>
             <option value="10" selected>10問</option>
             <option value="20">20問</option>
+            <option value="30">30問</option>
         </select>
         
         <button class="start-btn" onclick="startQuiz()">学習開始！</button>
     </div>
 
+    <!-- ローディング表示 -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">データを取得中...</p>
+    </div>
+
+    <!-- 2. クイズ画面 -->
     <div id="quiz-screen" class="hidden">
         <div id="progress">1 / 10</div>
         <h2 id="question-meaning">読み込み中...</h2>
         <div id="choices-area">
-            </div>
+            <!-- ボタンが動的に生成される -->
+        </div>
     </div>
 
+    <!-- 3. 結果画面 -->
     <div id="result-screen" class="hidden">
         <h2>結果発表</h2>
-        <p id="final-score" style="font-size: 1.5rem; font-weight: bold;"></p>
+        <p id="final-score" style="font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 25px 0;"></p>
         <button class="start-btn" onclick="location.reload()">もう一度解く</button>
     </div>
 </div>
@@ -125,9 +238,9 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // --- 【重要】ご自身のFirebase設定をここに貼り付けてください ---
+    // --- Firebaseの設定（apiKeyの重複クォーテーションを修正しました） ---
     const firebaseConfig = {
-        apiKey: ""AIzaSyD3kROMBvsbOScqTomHWzQrgibk1SGyRrk"",
+        apiKey: "AIzaSyD3kROMBvsbOScqTomHWzQrgibk1SGyRrk",
         authDomain: "word-app-sokutan.firebaseapp.com",
         projectId: "word-app-sokutan",
         storageBucket: "word-app-sokutan.appspot.com",
@@ -138,20 +251,33 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // AudioContextの初期化（ビープ音用）
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // AudioContextの初期化（ブラウザ制限回避のため関数内で初期化）
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
     function playTone(freq, type, duration) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        try {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime); // 音量を少しマイルドに調整
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+            console.warn("Audio playback failed:", e);
+        }
     }
 
     let quizDataList = [];
@@ -160,26 +286,80 @@
 
     // クイズ開始
     window.startQuiz = async () => {
-        const section = parseInt(document.getElementById("section-select").value);
+        initAudio(); // ユーザーのアクションにトリガーして音声を有効化
+        
+        const sectionVal = document.getElementById("section-select").value;
         const count = parseInt(document.getElementById("count-select").value);
 
+        // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
-        document.getElementById("quiz-screen").classList.remove("hidden");
+        document.getElementById("loading-overlay").classList.remove("hidden");
 
         try {
-            const q = query(collection(db, "vocabulary"), where("section", "==", section), limit(count));
-            const snap = await getDocs(q);
-            quizDataList = snap.docs.map(doc => doc.data()).sort(() => Math.random() - 0.5);
+            // 【対策1: 型の不一致回避】
+            // Firestoreに格納されている section が「数値型」か「文字列型」か不明なため、両方の可能性に対応します。
+            const sectionNum = parseInt(sectionVal);
+            const sectionStr = String(sectionVal);
+
+            let snap = null;
             
+            // 1. まずは数値として検索を試みる
+            const qNum = query(collection(db, "vocabulary"), where("section", "==", sectionNum), limit(150));
+            snap = await getDocs(qNum);
+            
+            // 2. 数値で見つからなかった場合、文字列として検索を試みる
+            if (snap.empty) {
+                console.log(`Section ${sectionNum} (Number) returned no docs. Trying as String...`);
+                const qStr = query(collection(db, "vocabulary"), where("section", "==", sectionStr), limit(150));
+                snap = await getDocs(qStr);
+            }
+
+            // 3. それでも見つからない場合、文字列にゼロパディング（例: "01"）を試みる
+            if (snap.empty) {
+                const zeroPaddedSection = String(sectionNum).padStart(2, '0');
+                console.log(`Trying zero-padded section string: "${zeroPaddedSection}"...`);
+                const qPad = query(collection(db, "vocabulary"), where("section", "==", zeroPaddedSection), limit(150));
+                snap = await getDocs(qPad);
+            }
+
+            // 取得したドキュメントを配列に変換
+            quizDataList = snap.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data
+                };
+            });
+
+            // 取得できた中からシャッフルして指定問題数に制限
+            quizDataList.sort(() => Math.random() - 0.5);
+            if (quizDataList.length > count) {
+                quizDataList = quizDataList.slice(0, count);
+            }
+            
+            // チェック: 万が一全く存在しなかった場合
             if (quizDataList.length === 0) {
-                alert("指定されたセクションにデータが見つかりませんでした。");
+                alert(`セクション ${sectionVal} に該当する単語データがFirestoreで見つかりませんでした。データ内の「section」フィールドの記述、またはセキュリティルールを確認してください。`);
                 location.reload();
                 return;
             }
+
+            // クイズ画面へ移行
+            document.getElementById("loading-overlay").classList.add("hidden");
+            document.getElementById("quiz-screen").classList.remove("hidden");
+            
             showNextQuestion();
         } catch (e) {
             console.error("Error fetching data: ", e);
-            alert("データの取得に失敗しました。Firestoreの権限を確認してください。");
+            document.getElementById("loading-overlay").classList.add("hidden");
+            document.getElementById("home-screen").classList.remove("hidden");
+            
+            // 【対策3: インデックスエラーの場合、わかりやすい指示を出す】
+            if (e.message && e.message.includes("index")) {
+                alert("Firestoreのインデックスが必要です。ブラウザのF12（デベロッパーツール）を開き、コンソールに表示されている「Create Index」のリンクをクリックしてインデックスを生成してください。");
+            } else {
+                alert("データの取得に失敗しました。Firestoreの「セキュリティルール」が期限切れになっていないか確認してください。");
+            }
         }
     };
 
@@ -192,19 +372,42 @@
 
         const currentQuiz = quizDataList[currentIndex];
         document.getElementById("progress").innerText = `${currentIndex + 1} / ${quizDataList.length}`;
-        document.getElementById("question-meaning").innerText = currentQuiz.meaning;
+        document.getElementById("question-meaning").innerText = `意味：${currentQuiz.meaning}`;
 
         // ハズレの選択肢を作成（解決策A）
         let choices = [currentQuiz.word];
-        while (choices.length < 4) {
-            const randomNum = Math.floor(Math.random() * 2442) + 1;
+        const maxWords = 2442;
+        
+        // タイムアウト保護（無限ループ防止）
+        let attempts = 0;
+        while (choices.length < 4 && attempts < 20) {
+            attempts++;
+            const randomNum = Math.floor(Math.random() * maxWords) + 1;
             const randomId = "word_" + String(randomNum).padStart(4, '0');
-            const rSnap = await getDoc(doc(db, "vocabulary", randomId));
             
-            if (rSnap.exists()) {
-                const w = rSnap.data().word;
-                if (!choices.includes(w)) choices.push(w);
+            try {
+                const rSnap = await getDoc(doc(db, "vocabulary", randomId));
+                if (rSnap.exists()) {
+                    const w = rSnap.data().word;
+                    // 正解と同じ、またはすでに選択肢にある単語は排除
+                    if (w && !choices.includes(w)) {
+                        choices.push(w);
+                    }
+                }
+            } catch (err) {
+                console.warn(`Could not fetch wrong choice ${randomId}:`, err);
             }
+        }
+
+        // 万が一ハズレが足りない場合のフォールバック（緊急時）
+        const fallbacks = ["understand", "express", "develop", "provide", "improve", "create"];
+        let fIndex = 0;
+        while (choices.length < 4) {
+            const fallbackWord = fallbacks[fIndex % fallbacks.length];
+            if (!choices.includes(fallbackWord)) {
+                choices.push(fallbackWord);
+            }
+            fIndex++;
         }
         
         choices.sort(() => Math.random() - 0.5);
@@ -227,18 +430,18 @@
         if (isCorrect) {
             score++;
             btn.classList.add("correct");
-            playTone(880, 'sine', 0.5);
+            playTone(880, 'sine', 0.4); // 高い澄んだ音
         } else {
             btn.classList.add("wrong");
             document.getElementById("app").classList.add("shake");
-            playTone(150, 'square', 0.5);
+            playTone(150, 'sawtooth', 0.4); // 不正解ブザーに近いノコギリ波
             setTimeout(() => document.getElementById("app").classList.remove("shake"), 400);
         }
 
         setTimeout(() => {
             currentIndex++;
             showNextQuestion();
-        }, 1000);
+        }, 1200);
     }
 
     // 結果表示
