@@ -14,6 +14,7 @@
             --card-bg: #ffffff;
             --border: #e2e8f0;
             --info: #3182ce;
+            --gold: #f59e0b;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -202,25 +203,27 @@
             font-weight: normal;
         }
 
-        /* 2状態トグル共通 */
+        /* 3状態・2状態トグル共通 */
         .toggle-container {
             display: flex;
             background: #edf2f7;
             padding: 4px;
             border-radius: 10px;
             margin-bottom: 12px;
+            gap: 2px;
         }
         .toggle-btn {
             flex: 1;
-            padding: 8px;
+            padding: 8px 4px;
             margin: 0;
             border: none;
             border-radius: 8px;
             background: transparent;
             font-weight: bold;
             color: #718096;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .toggle-btn.active {
             background: white;
@@ -365,6 +368,76 @@
             background: var(--primary-hover); 
             box-shadow: 0 6px 12px rgba(76, 175, 80, 0.25);
         }
+
+        /* ランキングボード */
+        .ranking-container {
+            margin-top: 20px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: left;
+        }
+        .ranking-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ranking-title span {
+            font-size: 0.75rem;
+            color: var(--info);
+            cursor: pointer;
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 6px;
+            border-bottom: 1px solid #f7fafc;
+            font-size: 0.85rem;
+        }
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        .rank-badge {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-right: 8px;
+            background: #edf2f7;
+            color: #718096;
+        }
+        .rank-1 .rank-badge { background: var(--gold); color: white; }
+        .rank-2 .rank-badge { background: #cbd5e0; color: white; }
+        .rank-3 .rank-badge { background: #ed8936; color: white; }
+        .rank-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        .rank-score {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .no-rank {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.8rem;
+            padding: 15px 0;
+        }
         
         /* クイズ演出用 */
         .correct { 
@@ -462,6 +535,19 @@
             margin-bottom: 18px;
             line-height: 1.4;
         }
+        .modal-input-field {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 0.95rem;
+        }
+        .modal-input-field:focus {
+            border-color: var(--primary);
+        }
         .modal-buttons {
             display: flex;
             gap: 8px;
@@ -544,8 +630,9 @@
         <!-- 出題対象のトグル設定 -->
         <div class="select-label">出題対象</div>
         <div class="toggle-container">
-            <button type="button" class="toggle-btn active" id="target-all" onclick="setTargetType('all')">全単語からランダム</button>
-            <button type="button" class="toggle-btn" id="target-weak" onclick="setTargetType('weak')">苦手な単語のみ</button>
+            <button type="button" class="toggle-btn active" id="target-all" onclick="setTargetType('all')">セクション別</button>
+            <button type="button" class="toggle-btn" id="target-weak" onclick="setTargetType('weak')">苦手な単語</button>
+            <button type="button" class="toggle-btn" id="target-challenge" onclick="setTargetType('challenge')">全範囲チャレンジ</button>
         </div>
 
         <div class="select-label">出題モード</div>
@@ -554,7 +641,7 @@
             <button type="button" class="toggle-btn" id="mode-ja-en" onclick="setMode('ja-en')">和英 (和 → 英)</button>
         </div>
 
-        <!-- セクション選択エリア（全単語出題時のみ表示） -->
+        <!-- セクション選択エリア（セクション別出題時のみ表示） -->
         <div id="section-selection-area">
             <div class="select-label">
                 セクションを選択
@@ -582,17 +669,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- 最大問題数設定（チャレンジモード以外で表示） -->
+        <div id="question-count-area">
+            <div class="select-label">最大問題数</div>
+            <select id="count-select">
+                <option value="5">5問</option>
+                <option value="10" selected>10問</option>
+                <option value="20">20問</option>
+                <option value="30">30問</option>
+                <option value="50">50問</option>
+            </select>
+        </div>
         
-        <div class="select-label">最大問題数</div>
-        <select id="count-select">
-            <option value="5">5問</option>
-            <option value="10" selected>10問</option>
-            <option value="20">20問</option>
-            <option value="30">30問</option>
-            <option value="50">50問</option>
-        </select>
+        <!-- チャレンジモードの案内（チャレンジモードのみで表示） -->
+        <div id="challenge-info-area" class="hidden" style="background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 10px; text-align: left; font-size: 0.85rem; color: #b45309; margin-bottom: 15px;">
+            <strong>🏆 全範囲チャレンジルール:</strong>
+            <ul style="margin: 5px 0 0 15px; padding: 0;">
+                <li>全2442単語からランダムに <strong>20問</strong> 出題されます。</li>
+                <li>終了時の正答数に基づいて、全国ランキングに登録可能です！</li>
+            </ul>
+        </div>
         
         <button class="start-btn" onclick="startQuiz()">学習開始！</button>
+
+        <!-- 全国ランキングボード（ホーム画面に常時表示） -->
+        <div class="ranking-container">
+            <div class="ranking-title">
+                🏆 全範囲チャレンジランキング
+                <span onclick="loadRankingData()">🔄更新</span>
+            </div>
+            <ul class="ranking-list" id="ranking-list-area">
+                <div class="no-rank">読み込み中...</div>
+            </ul>
+        </div>
 
         <!-- 開発時用：エラーログ確認エリア -->
         <div id="debug-area" class="error-box hidden">
@@ -632,6 +742,10 @@
     <div class="modal-content">
         <div class="modal-title" id="modal-title-text">確認</div>
         <div class="modal-msg" id="modal-msg-text">メッセージ</div>
+        
+        <!-- 名前入力用フォーム（非表示・必要時に表示） -->
+        <input type="text" id="modal-input-field" class="modal-input-field hidden" placeholder="ニックネームを入力してください" maxlength="15">
+        
         <div class="modal-buttons">
             <button id="modal-btn-cancel" class="bulk-btn modal-btn hidden">キャンセル</button>
             <button id="modal-btn-ok" class="start-btn modal-btn" style="margin: 0; padding: 10px;">OK</button>
@@ -691,14 +805,28 @@
         }
     }
 
-    // --- カスタムモーダルシステム（ブラウザ標準alert/confirmの回避） ---
+    // --- カスタムモーダルシステム（ブラウザ標準alert/confirm/promptの完全代替） ---
     let modalResolve = null;
-    function showModal(title, msg, showCancel = false) {
+    function showModal(title, msg, options = {}) {
+        const showCancel = options.showCancel || false;
+        const showInput = options.showInput || false;
+        const inputPlaceholder = options.placeholder || "入力してください";
+        const defaultValue = options.defaultValue || "";
+
         return new Promise((resolve) => {
             modalResolve = resolve;
             document.getElementById("modal-title-text").innerText = title;
             document.getElementById("modal-msg-text").innerText = msg;
             
+            const inputField = document.getElementById("modal-input-field");
+            if (showInput) {
+                inputField.classList.remove("hidden");
+                inputField.placeholder = inputPlaceholder;
+                inputField.value = defaultValue;
+            } else {
+                inputField.classList.add("hidden");
+            }
+
             const cancelBtn = document.getElementById("modal-btn-cancel");
             if (showCancel) {
                 cancelBtn.classList.remove("hidden");
@@ -711,8 +839,10 @@
     }
 
     document.getElementById("modal-btn-ok").onclick = () => {
+        const inputField = document.getElementById("modal-input-field");
+        const value = inputField.classList.contains("hidden") ? true : inputField.value.trim();
         document.getElementById("custom-modal").classList.add("hidden");
-        if (modalResolve) modalResolve(true);
+        if (modalResolve) modalResolve(value);
     };
 
     document.getElementById("modal-btn-cancel").onclick = () => {
@@ -723,7 +853,7 @@
     // クイズ設定・認証用のグローバル変数
     let selectedSections = new Set([1]); // デフォルトでSection 1を選択
     let quizMode = "en-ja"; // デフォルトで英和モード
-    let targetType = "all"; // all: 全単語, weak: 苦手単語のみ
+    let targetType = "all"; // all: セクション別, weak: 苦手単語, challenge: 全範囲チャレンジ
     let quizDataList = [];
     let currentIndex = 0;
     let score = 0;
@@ -783,6 +913,8 @@
             
             // ユーザー進捗データをロード (RULE 2 ＆ RULE 3 準拠)
             await loadUserProgressData(user.uid);
+            // ランキングデータをロード (RULE 2 ＆ RULE 3 準拠)
+            await loadRankingData();
             
             document.getElementById("auth-screen").classList.add("hidden");
             document.getElementById("user-info-bar").classList.remove("hidden");
@@ -841,6 +973,65 @@
             console.error("Failed to load user progress:", e);
             showDebug("進捗データの取得エラー: " + e.message);
         }
+    }
+
+    // 全国ランキングの読み込み（RULE 2: シンプルに全ドキュメントを取得し、メモリ上でソートとスライス）
+    async function loadRankingData() {
+        const rankListArea = document.getElementById("ranking-list-area");
+        if (!currentUser) return; // 認証ガード (RULE 3)
+
+        try {
+            // パス仕様: /artifacts/{appId}/public/data/ranking (RULE 1 準拠)
+            const rankingCol = collection(db, 'artifacts', appId, 'public', 'data', 'ranking');
+            const snap = await getDocs(rankingCol);
+            
+            const list = [];
+            snap.forEach((doc) => {
+                list.push({ id: doc.id, ...doc.data() });
+            });
+
+            // メモリ上での並び替え (RULE 2: スコアが高い順、同一なら古いタイムスタンプ順)
+            list.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+                const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+                return timeA - timeB;
+            });
+
+            // トップ10を抽出
+            const top10 = list.slice(0, 10);
+
+            rankListArea.innerHTML = "";
+            if (top10.length === 0) {
+                rankListArea.innerHTML = `<div class="no-rank">まだ登録されたハイスコアはありません。</div>`;
+                return;
+            }
+
+            top10.forEach((item, index) => {
+                const li = document.createElement("li");
+                li.className = `ranking-item rank-${index + 1}`;
+                li.innerHTML = `
+                    <div>
+                        <span class="rank-badge">${index + 1}</span>
+                        <span class="rank-name">${escapeHTML(item.username || "名無し")}</span>
+                    </div>
+                    <span class="rank-score">${item.score} / 20問</span>
+                `;
+                rankListArea.appendChild(li);
+            });
+        } catch (e) {
+            console.error("Failed to load ranking data:", e);
+            rankListArea.innerHTML = `<div class="no-rank">ランキングの読み込みに失敗しました。</div>`;
+        }
+    }
+
+    // HTMLエスケープ処理（XSS対策）
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
     }
 
     // 認証モード切り替え
@@ -915,7 +1106,7 @@
 
     // ログアウト
     window.triggerLogout = async () => {
-        const confirmLogout = await showModal("ログアウト確認", "ログアウトしますか？", true);
+        const confirmLogout = await showModal("ログアウト確認", "ログアウトしますか？", { showCancel: true });
         if (confirmLogout) {
             document.getElementById("loading-overlay").classList.remove("hidden");
             document.getElementById("loading-text").innerText = "ログアウト中...";
@@ -937,13 +1128,24 @@
         targetType = type;
         document.getElementById("target-all").classList.toggle("active", type === 'all');
         document.getElementById("target-weak").classList.toggle("active", type === 'weak');
+        document.getElementById("target-challenge").classList.toggle("active", type === 'challenge');
         
-        // 「苦手な単語のみ」選択時は、セクション選択画面を非表示にする
         const sectionSelectionArea = document.getElementById("section-selection-area");
-        if (type === 'weak') {
-            sectionSelectionArea.classList.add("hidden");
-        } else {
+        const questionCountArea = document.getElementById("question-count-area");
+        const challengeInfoArea = document.getElementById("challenge-info-area");
+        
+        if (type === 'all') {
             sectionSelectionArea.classList.remove("hidden");
+            questionCountArea.classList.remove("hidden");
+            challengeInfoArea.classList.add("hidden");
+        } else if (type === 'weak') {
+            sectionSelectionArea.classList.add("hidden");
+            questionCountArea.classList.remove("hidden");
+            challengeInfoArea.classList.add("hidden");
+        } else if (type === 'challenge') {
+            sectionSelectionArea.classList.add("hidden");
+            questionCountArea.classList.add("hidden"); // チャレンジは20問固定
+            challengeInfoArea.classList.remove("hidden");
         }
     };
 
@@ -1024,7 +1226,8 @@
             return;
         }
 
-        const count = parseInt(document.getElementById("count-select").value);
+        // チャレンジモードは一律20問固定、それ以外はセレクトボックスから取得
+        const count = targetType === "challenge" ? 20 : parseInt(document.getElementById("count-select").value);
 
         // UI切り替え
         document.getElementById("home-screen").classList.add("hidden");
@@ -1060,8 +1263,35 @@
 
             currentCollectionRef = targetColRef;
 
-            if (targetType === "weak") {
-                // 苦手な単語のみで出題（メモリ上の進捗マップからwrongCount > 0のものをピックアップ）
+            if (targetType === "challenge") {
+                // 【全範囲チャレンジのデータロード】
+                // 全2442単語から、クライアント側で完全にランダムな番号を20個抽出し、非同期並行フェッチ
+                const randomIds = [];
+                const maxWords = 2442;
+                while (randomIds.length < 20) {
+                    const rNum = Math.floor(Math.random() * maxWords) + 1;
+                    const rId = "word_" + String(rNum).padStart(4, '0');
+                    if (!randomIds.includes(rId)) {
+                        randomIds.push(rId);
+                    }
+                }
+
+                showDebug(`チャレンジ用全範囲フェッチ開始: [${randomIds.join(", ")}]`);
+
+                const challengeFetchPromises = randomIds.map(async (docId) => {
+                    const wordDocRef = doc(targetColRef, docId);
+                    const snap = await getDoc(wordDocRef);
+                    if (snap.exists()) {
+                        return { id: snap.id, ...snap.data() };
+                    }
+                    return null;
+                });
+
+                const rawResults = await Promise.all(challengeFetchPromises);
+                accumulatedDocs = rawResults.filter(docData => docData !== null);
+
+            } else if (targetType === "weak") {
+                // 苦手な単語のみ
                 const weakWordList = [];
                 userProgressMap.forEach((data, wordId) => {
                     if (data.wrongCount > 0) {
@@ -1076,7 +1306,7 @@
 
                 if (weakWordList.length === 0) {
                     document.getElementById("loading-overlay").classList.add("hidden");
-                    await showModal("確認", "苦手な単語（過去に間違えた単語）がまだありません！まずは「全単語」から学習を開始しましょう。");
+                    await showModal("確認", "苦手な単語（過去に間違えた単語）がまだありません！まずは「セクション別」から学習を開始しましょう。");
                     restartHome();
                     return;
                 }
@@ -1141,13 +1371,12 @@
 
     // 個別の学習進捗をFirestoreに更新して記録する（RULE 1 ＆ RULE 3 準拠）
     async function updateWordProgress(wordId, isCorrect, wordData) {
-        if (!currentUser) return; // 認証なしはガード
+        if (!currentUser) return;
 
         try {
             // パス: /artifacts/{appId}/users/{userId}/progress/{wordId} (RULE 1 準拠)
             const progressDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'progress', wordId);
             
-            // 進捗ドキュメントのアップグレード
             await setDoc(progressDocRef, {
                 word: wordData.word || "",
                 meaning: wordData.meaning || "",
@@ -1157,7 +1386,7 @@
                 lastPracticed: serverTimestamp()
             }, { merge: true });
 
-            // メモリ上のマップも直接同期して同期ずれを防止
+            // メモリ同期
             if (!userProgressMap.has(wordId)) {
                 userProgressMap.set(wordId, {
                     word: wordData.word,
@@ -1174,6 +1403,55 @@
 
         } catch (err) {
             console.error("Error updating word progress:", err);
+        }
+    }
+
+    // チャレンジモード終了時のランキング登録ロジック（RULE 1 ＆ RULE 3 準拠）
+    async function checkAndRegisterRanking() {
+        if (!currentUser) return;
+
+        try {
+            // 現在のユーザーの自己記録がすでに存在するかチェック (RULE 1 準拠)
+            const userRankDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'ranking', currentUser.uid);
+            const rSnap = await getDoc(userRankDocRef);
+            
+            let previousHighScore = 0;
+            let previousUsername = "";
+            if (rSnap.exists()) {
+                const rData = rSnap.data();
+                previousHighScore = rData.score || 0;
+                previousUsername = rData.username || "";
+            }
+
+            // 今回のスコアが自己ベストを更新した場合のみ登録（初挑戦も含む）
+            if (score > previousHighScore) {
+                // ニックネーム入力ダイアログ
+                const nickname = await showModal("🏆 ハイスコア更新！", "全国ランキングに登録するニックネームを入力してください：", {
+                    showInput: true,
+                    placeholder: "ニックネーム (15文字以内)",
+                    defaultValue: previousUsername || (currentUser.isAnonymous ? "ゲスト" : currentUser.email.split("@")[0])
+                });
+
+                if (nickname && String(nickname).trim() !== "") {
+                    document.getElementById("loading-overlay").classList.remove("hidden");
+                    document.getElementById("loading-text").innerText = "ランキングを更新中...";
+                    
+                    // Firestoreへ保存 (RULE 1 準拠)
+                    await setDoc(userRankDocRef, {
+                        username: String(nickname).trim().substring(0, 15),
+                        score: score,
+                        userId: currentUser.uid,
+                        timestamp: serverTimestamp()
+                    });
+                    
+                    document.getElementById("loading-overlay").classList.add("hidden");
+                    await showModal("登録成功", "あなたのハイスコアがランキングに登録されました！");
+                }
+            }
+        } catch (err) {
+            console.error("Failed to register ranking:", err);
+            document.getElementById("loading-overlay").classList.add("hidden");
+            await showModal("エラー", "ランキングへの保存に失敗しました。");
         }
     }
 
@@ -1286,10 +1564,15 @@
     }
 
     // 結果表示
-    function showResult() {
+    async function showResult() {
         document.getElementById("quiz-screen").classList.add("hidden");
         document.getElementById("result-screen").classList.remove("hidden");
         document.getElementById("final-score").innerText = `${quizDataList.length}問中 ${score}問正解！`;
+
+        // チャレンジモードの場合は、自動的にランキング処理を走らせる
+        if (targetType === "challenge") {
+            await checkAndRegisterRanking();
+        }
     }
 
     // 設定（ホーム）に戻る
@@ -1301,9 +1584,11 @@
         
         if (currentUser) {
             document.getElementById("loading-overlay").classList.remove("hidden");
-            document.getElementById("loading-text").innerText = "最新進捗データを同期中...";
+            document.getElementById("loading-text").innerText = "最新データを同期中...";
             // 最新の統計をロード
             await loadUserProgressData(currentUser.uid);
+            // 最新のランキングをロード
+            await loadRankingData();
             document.getElementById("loading-overlay").classList.add("hidden");
             document.getElementById("home-screen").classList.remove("hidden");
         } else {
