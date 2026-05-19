@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>単語クイズ - word-app-sokutan</title>
+    <title>Galaxy Vocabulary - word-app-sokutan</title>
     <style>
         :root {
             --primary: #00f2fe; /* ネオンブルー */
@@ -748,7 +748,7 @@
 
     <!-- 0. 認証画面（ログイン/新規登録） -->
     <div id="auth-screen" class="hidden">
-        <h1>宇宙単語クイズ</h1>
+        <h1>Galaxy Vocabulary</h1>
         <p class="subtitle">ログイン / アカウント登録</p>
         
         <div class="auth-form" id="login-form-area">
@@ -771,7 +771,7 @@
 
     <!-- 1. 設定画面 -->
     <div id="home-screen" class="hidden">
-        <h1>宇宙単語クイズ</h1>
+        <h1>Galaxy Vocabulary</h1>
         
         <!-- 学習進捗ダッシュボード -->
         <div class="dashboard" id="user-dashboard">
@@ -1241,6 +1241,13 @@
             console.error("Failed to load ranking data:", e);
             rankListArea.innerHTML = `<div class="no-rank">ランキングの読み込みに失敗しました。</div>`;
         }
+    }
+
+    // HTMLエスケープ処理（XSS対策）
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
     }
 
     // 認証モード切り替え
@@ -1792,6 +1799,7 @@
         const maxWords = 2442;
         let attempts = 0;
         
+        const="vocabulary";
         const targetCol = currentCollectionRef || collection(db, "vocabulary");
 
         while (choices.length < 4 && attempts < 25) {
